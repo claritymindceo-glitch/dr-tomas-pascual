@@ -78,4 +78,4 @@ npm start      # producción (dist/)
 
 - Carpeta del repo se llama `remix_-pagina-dr-pascual` pero el stack es Vite+Express, no Remix.
 - Los tokens `@theme` existen pero los componentes usan hex inline. Migrar a tokens Tailwind mejoraría mantenibilidad.
-- En Vercel producción deben existir `GEMINI_API_KEY` (y opcional `ANTHROPIC_API_KEY`).
+- En Vercel producción: `OPENAI_API_KEY`, opcional `OPENAI_MODEL` (default `gpt-4o-mini`).

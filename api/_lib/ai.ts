@@ -1,21 +1,45 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
-let aiClient: GoogleGenAI | null = null;
+export const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
-function getGeminiClient(): GoogleGenAI {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    const key = process.env.OPENAI_API_KEY;
     if (!key?.trim()) {
-      throw new Error("GEMINI_API_KEY is not defined in environment variables.");
+      throw new Error("OPENAI_API_KEY is not defined in environment variables.");
     }
-    aiClient = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: { "User-Agent": "dr-tomas-pascual-vercel" },
-      },
-    });
+    openaiClient = new OpenAI({ apiKey: key });
   }
-  return aiClient;
+  return openaiClient;
+}
+
+type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
+
+export async function completeChat(
+  system: string,
+  messages: Array<{ role: string; content: string }>,
+  maxTokens = 1024
+): Promise<string> {
+  const openai = getOpenAIClient();
+
+  const chatMessages: ChatMessage[] = [
+    { role: "system", content: system },
+    ...messages.map((m) => ({
+      role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
+      content: m.content,
+    })),
+  ];
+
+  const response = await openai.chat.completions.create({
+    model: OPENAI_MODEL,
+    messages: chatMessages,
+    max_tokens: maxTokens,
+    temperature: 0.7,
+  });
+
+  return response.choices[0]?.message?.content?.trim() || "";
 }
 
 export const PASCUAL_KNOWLEDGE_CONTEXT = `
@@ -48,83 +72,3 @@ Instrucciones de comportamiento clínico y de comunicación:
 6. REGLA CRÍTICA: Debes incluir SIEMPRE un descargo de responsabilidad breve pero rotundo en cada respuesta médica: "Esta orientación es puramente educativa e informática para acompañar tu proceso previo a la consulta. No reemplaza un diagnóstico médico clínico ni presencial. Es de suma importancia realizar un estudio de imágenes guiado por un especialista para definir conducta terapéutica."
 7. Impulsa delicadamente a reservar una consulta diagnóstica de alta competencia con el Dr. Pascual a través de la consola de turnos interactiva del sitio seleccionando fecha y horario disponible.
 `;
-
-export async function completeChat(
-  system: string,
-  messages: Array<{ role: string; content: string }>,
-  maxTokens = 1024
-): Promise<string> {
-  const ai = getGeminiClient();
-  const contents = messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
-    contents,
-    config: {
-      systemInstruction: system,
-      temperature: 0.7,
-      maxOutputTokens: maxTokens,
-    },
-  });
-
-  return response.text?.trim() || "";
-}
-
-export async function completeWithAnthropicOrGemini(
-  body: {
-    model?: string;
-    max_tokens?: number;
-    system?: string;
-    messages: Array<{ role: string; content: string }>;
-  }
-): Promise<Record<string, unknown>> {
-  const { model, max_tokens, system, messages } = body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (apiKey?.trim() && apiKey !== "YOUR_ANTHROPIC_API_KEY") {
-    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: model || "claude-sonnet-4-20250514",
-        max_tokens: max_tokens || 300,
-        system,
-        messages,
-      }),
-    });
-
-    if (!anthropicResponse.ok) {
-      const errText = await anthropicResponse.text();
-      throw new Error(errText);
-    }
-
-    return (await anthropicResponse.json()) as Record<string, unknown>;
-  }
-
-  const responseText =
-    (await completeChat(system || PASCUAL_KNOWLEDGE_CONTEXT, messages, max_tokens || 300)) ||
-    "Disculpas, estoy teniendo dificultades para responder.";
-
-  return {
-    id: `pseudo_msg_${Math.random().toString(36).substring(2, 9)}`,
-    type: "message",
-    role: "assistant",
-    model: model || "claude-sonnet-4-20250514",
-    content: [{ type: "text", text: responseText }],
-    stop_reason: "end_turn",
-    stop_sequence: null,
-    usage: {
-      input_tokens: Math.floor(
-        messages.reduce((acc, m) => acc + m.content.length, 0) / 4
-      ),
-      output_tokens: Math.floor(responseText.length / 4),
-    },
-  };
-}

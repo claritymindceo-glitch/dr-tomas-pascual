@@ -153,6 +153,78 @@
 .bot-bubble {
   border-radius: 0 12px 12px 12px !important;
 }
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(74, 132, 153, 0.1);
+}
+
+/* Tonos derivados de la paleta clínica: teal (#4a8499) + oro (#9a7b2e) + perla */
+.social-icon--instagram {
+  color: #a67b5b;
+  background: rgba(166, 123, 91, 0.07);
+  border-color: rgba(166, 123, 91, 0.16);
+}
+
+.social-icon--instagram:hover {
+  color: #9a7b2e;
+  background: rgba(154, 123, 46, 0.1);
+  border-color: rgba(154, 123, 46, 0.26);
+}
+
+.social-icon--linkedin {
+  color: #4a8499;
+  background: rgba(74, 132, 153, 0.09);
+  border-color: rgba(74, 132, 153, 0.2);
+}
+
+.social-icon--linkedin:hover {
+  color: #3d7184;
+  background: rgba(74, 132, 153, 0.15);
+  border-color: rgba(74, 132, 153, 0.32);
+}
+
+.social-icon--facebook {
+  color: #5c8a9a;
+  background: rgba(74, 132, 153, 0.06);
+  border-color: rgba(74, 132, 153, 0.15);
+}
+
+.social-icon--facebook:hover {
+  color: #4a8499;
+  background: rgba(74, 132, 153, 0.12);
+  border-color: rgba(74, 132, 153, 0.28);
+}
+
+.social-icon--youtube {
+  color: #9a7b2e;
+  background: rgba(154, 123, 46, 0.08);
+  border-color: rgba(154, 123, 46, 0.18);
+}
+
+.social-icon--youtube:hover {
+  color: #836624;
+  background: rgba(154, 123, 46, 0.13);
+  border-color: rgba(154, 123, 46, 0.3);
+}
+
 .user-bubble {
   border-radius: 12px 0 12px 12px !important;
 }

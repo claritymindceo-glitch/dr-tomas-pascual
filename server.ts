@@ -7,7 +7,8 @@ import {
   OPENAI_MODEL,
   PASCUAL_KNOWLEDGE_CONTEXT,
 } from "./api/_lib/ai.js";
-import { sendContactEmail, validateContactPayload } from "./api/_lib/contact-email.js";
+import { validateContactPayload } from "./api/_lib/contact-email.js";
+import { submitConsultation } from "./api/_lib/submit-consultation.js";
 
 dotenv.config();
 
@@ -47,8 +48,12 @@ app.post("/api/consult", async (req, res) => {
 app.post("/api/contact", async (req, res) => {
   try {
     const payload = validateContactPayload(req.body);
-    await sendContactEmail(payload);
-    res.json({ ok: true, message: "Consulta enviada correctamente." });
+    const { consultationId } = await submitConsultation(payload);
+    res.json({
+      ok: true,
+      message: "Consulta enviada correctamente.",
+      consultationId,
+    });
   } catch (error: unknown) {
     const details = error instanceof Error ? error.message : "Unknown error";
     console.error("Error sending contact email:", error);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Mail, Phone, Send, User, X, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface ConsultFormProps {
@@ -17,6 +17,12 @@ const SUBJECT_OPTIONS = [
 ];
 
 export default function ConsultForm({ onClose }: ConsultFormProps) {
+  const submissionIdRef = useRef(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `sub-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
+  const submittingRef = useRef(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,6 +33,11 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current || status === "submitting" || status === "success") {
+      return;
+    }
+
+    submittingRef.current = true;
     setStatus("submitting");
     setErrorMessage("");
 
@@ -34,7 +45,14 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, subject, message }),
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          subject,
+          message,
+          submissionId: submissionIdRef.current,
+        }),
       });
 
       const data = await response.json();
@@ -45,6 +63,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
 
       setStatus("success");
     } catch (error) {
+      submittingRef.current = false;
       setStatus("error");
       setErrorMessage(
         error instanceof Error

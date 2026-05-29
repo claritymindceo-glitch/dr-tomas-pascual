@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Instagram,
   Linkedin,
+  Youtube,
   Facebook,
   FileSpreadsheet,
   FileBadge2,
@@ -64,6 +65,8 @@ import SpaceAsistente from "./components/sections/SpaceAsistente";
 import SpaceSedes from "./components/sections/SpaceSedes";
 import SpacePortal from "./components/sections/SpacePortal";
 import ConsultForm from "./components/ConsultForm";
+
+const AI_AVATAR_SRC = "/images/dr_pascual_asistente_avatar.png";
 
 const NAV_ITEMS = [
   { id: 0, label: "Inicio" },
@@ -603,12 +606,42 @@ export default function App() {
                     <button onClick={() => paginate(7)} className="hover:text-[#1a1a18] transition cursor-pointer">Portal</button>
                   </div>
 
-                  <div className="flex gap-4 font-light text-[#5c5954]">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 border border-black/[0.08] hover:text-[#4a8499] hover:border-[#4a8499]/30 transition-all">
-                      <Instagram className="w-4 h-4" />
+                  <div className="flex gap-3 font-light">
+                    <a
+                      href="https://www.youtube.com/@DrTomasPascual/videos"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Canal de YouTube del Dr. Tomás Pascual"
+                      className="social-icon social-icon--youtube"
+                    >
+                      <Youtube className="w-4 h-4" strokeWidth={2} />
                     </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-2 border border-black/[0.08] hover:text-[#4a8499] hover:border-[#4a8499]/30 transition-all">
-                      <Linkedin className="w-4 h-4" />
+                    <a
+                      href="https://www.instagram.com/drtomaspascual"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Instagram del Dr. Tomás Pascual"
+                      className="social-icon social-icon--instagram"
+                    >
+                      <Instagram className="w-4 h-4" strokeWidth={2} />
+                    </a>
+                    <a
+                      href="https://ar.linkedin.com/in/drtomaspascual"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="LinkedIn del Dr. Tomás Pascual"
+                      className="social-icon social-icon--linkedin"
+                    >
+                      <Linkedin className="w-4 h-4" strokeWidth={2} />
+                    </a>
+                    <a
+                      href="https://www.facebook.com/drtomaspascual"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Facebook del Dr. Tomás Pascual"
+                      className="social-icon social-icon--facebook"
+                    >
+                      <Facebook className="w-4 h-4" strokeWidth={2} />
                     </a>
                   </div>
                 </div>
@@ -647,7 +680,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center overflow-hidden border border-black/[0.08] bg-white relative">
               <img 
-                src="/images/dr_tomas_pascual_1779914444643.png" 
+                src={AI_AVATAR_SRC}
                 alt="Dr. Tomás Pascual" 
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -673,7 +706,14 @@ export default function App() {
             const isLatest = idx === floatingMessages.length - 1;
             return (
               <div key={idx} className="space-y-2">
-                <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start items-end gap-2"}`}>
+                  {msg.role === "assistant" && (
+                    <img
+                      src={AI_AVATAR_SRC}
+                      alt="Dr. Pascual"
+                      className="w-7 h-7 rounded-full object-cover border border-black/[0.08] shrink-0 mb-0.5"
+                    />
+                  )}
                   <div
                     className={`max-w-[85%] p-3.5 text-xs font-sans leading-relaxed ${
                       msg.role === "user"
@@ -724,7 +764,12 @@ export default function App() {
           })}
 
           {floatingLoading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start items-end gap-2">
+              <img
+                src={AI_AVATAR_SRC}
+                alt="Dr. Pascual"
+                className="w-7 h-7 rounded-full object-cover border border-black/[0.08] shrink-0 mb-0.5"
+              />
               <div className="bg-white border border-black/[0.06] px-3 py-2 text-[#5c5954] text-[10px] flex items-center gap-2 bot-bubble font-light rounded-2xl shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4a8499]/60 animate-ping"></span>
                 <span>Orientando...</span>
@@ -766,7 +811,7 @@ export default function App() {
         
         <div className="w-full h-full rounded-full flex items-center justify-center bg-white relative overflow-hidden">
           <img 
-            src="/images/dr_tomas_pascual_1779914444643.png" 
+            src={AI_AVATAR_SRC} 
             alt="Dr. Tomás Pascual" 
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

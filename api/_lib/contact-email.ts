@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import nodemailer from "nodemailer";
 
 export interface ContactFormPayload {
@@ -6,6 +7,7 @@ export interface ContactFormPayload {
   phone?: string;
   subject?: string;
   message: string;
+  submissionId?: string;
 }
 
 const DEFAULT_SMTP_USER = "claritymind.ceo@gmail.com";
@@ -97,7 +99,7 @@ export function validateContactPayload(body: unknown): ContactFormPayload {
     throw new Error("Datos de formulario inválidos.");
   }
 
-  const { name, email, phone, subject, message } = body as Record<string, unknown>;
+  const { name, email, phone, subject, message, submissionId } = body as Record<string, unknown>;
 
   if (typeof name !== "string" || name.trim().length < 2) {
     throw new Error("El nombre es obligatorio (mínimo 2 caracteres).");
@@ -111,11 +113,32 @@ export function validateContactPayload(body: unknown): ContactFormPayload {
     throw new Error("La consulta debe tener al menos 10 caracteres.");
   }
 
+  let normalizedSubmissionId: string | undefined;
+  if (submissionId !== undefined && submissionId !== null && submissionId !== "") {
+    if (typeof submissionId !== "string" || !/^[a-zA-Z0-9_-]{8,128}$/.test(submissionId.trim())) {
+      throw new Error("Identificador de envío inválido.");
+    }
+    normalizedSubmissionId = submissionId.trim();
+  }
+
   return {
     name: name.trim(),
     email: email.trim(),
     phone: typeof phone === "string" ? phone.trim() : undefined,
     subject: typeof subject === "string" ? subject.trim() : undefined,
     message: message.trim(),
+    submissionId: normalizedSubmissionId,
   };
+}
+
+export function buildSubmissionFingerprint(payload: ContactFormPayload): string {
+  const raw = [
+    payload.email.trim().toLowerCase(),
+    payload.name.trim().toLowerCase(),
+    (payload.phone || "").trim(),
+    (payload.subject || "").trim(),
+    payload.message.trim(),
+  ].join("|");
+
+  return createHash("sha256").update(raw).digest("hex").slice(0, 32);
 }

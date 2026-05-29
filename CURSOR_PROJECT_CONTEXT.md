@@ -35,6 +35,17 @@ npm start      # producción (dist/)
 - `SMTP_PASS` — contraseña de aplicación Gmail (obligatoria)
 - `CONTACT_EMAIL_TO` — default temporal `claritymind.ceo@gmail.com`
 - `CONTACT_EMAIL_FROM` — remitente visible (default Consultas Dr. Pascual)
+- `FIREBASE_PROJECT_ID` — default `dr-tomas-pascual`
+- `FIREBASE_SERVICE_ACCOUNT` — JSON service account (Admin SDK, obligatorio en prod)
+- `GOOGLE_APPLICATION_CREDENTIALS` — alternativa local: ruta al JSON de service account
+
+## Firestore — consultas
+
+- Colección: `consultas`
+- Campos: `name`, `email`, `phone`, `subject`, `message`, `source`, `createdAt`, `emailSent`, `emailSentAt`, `emailError`
+- Escritura solo vía backend (`firebase-admin`); reglas bloquean acceso cliente
+- **Setup credenciales:** `service-account.json` (gitignored) + `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json` en `.env`. En Vercel: `FIREBASE_SERVICE_ACCOUNT` (JSON) + `FIREBASE_PROJECT_ID`.
+- **Reglas desplegadas:** 2026-05-29 (`firebase deploy --only firestore:rules`, cuenta ClarityMind).
 - `PORT` — puerto del servidor (default 5050)
 - `NODE_ENV` — `production` sirve estáticos desde `dist/`
 - `DISABLE_HMR` — desactiva HMR en Vite si es `true`

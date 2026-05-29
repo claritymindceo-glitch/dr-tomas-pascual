@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Dr. Tomás Agustín Pascual - Consultorio Digital",
+  "description": "Sitio web de marca personal y consultorio digital inteligente del Dr. Tomás Agustín Pascual, Especialista en Diagnóstico por Imágenes y traumatismos deportivos, médico consultor de Los Pumas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

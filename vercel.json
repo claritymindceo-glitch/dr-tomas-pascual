@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    { "source": "/v1/messages", "destination": "/api/v1/messages" },
+    { "source": "/api/consult", "destination": "/api/consult" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

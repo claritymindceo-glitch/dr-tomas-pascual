@@ -33,7 +33,7 @@ export default function SpaceAsistente({
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/asistente_digital_ai_banner_1779991919174.png"
+        image="/images/asistente_digital_ai_banner_1779991919174.png"
         tag="MESA DE GESTIÓN IA"
         title="ASISTENTE DIGITAL INTELIGENTE"
         subtitle="Consola de triage clínico inmediato integrada con base de conocimientos deportivos sobre lesiones músculo-esqueléticas"

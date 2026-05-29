@@ -97,7 +97,7 @@ export default function SpacePortal() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/sedes_recepcion_banner_1779991938852.png"
+        image="/images/sedes_recepcion_banner_1779991938852.png"
         tag="PORTAL DIGITAL"
         title="PORTAL DE AUTOGESTIÓN"
         subtitle="Verificá coberturas activas, preparaciones pre-estudio requeridas y gestioná la carga de credenciales con el consultorio"

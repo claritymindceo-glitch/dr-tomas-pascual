@@ -6,7 +6,7 @@ export default function SpaceSedes() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/sedes_recepcion_banner_1779991938852.png"
+        image="/images/sedes_recepcion_banner_1779991938852.png"
         tag="ACCESO Y TURNOS"
         title="SEDES DE ATENCIÓN DIRECTA"
         subtitle="Consultorios acreditados en Barrio Norte, San Isidro y centros autorizados de alta complejidad diagnóstica"

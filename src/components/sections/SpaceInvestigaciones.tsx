@@ -6,7 +6,7 @@ export default function SpaceInvestigaciones() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/investigaciones_academic_banner_1779991903362.png"
+        image="/images/investigaciones_academic_banner_1779991903362.png"
         tag="VANGUARDIA CIENTÍFICA"
         title="INVESTIGACIONES Y PREMIACIÓN RSNA"
         subtitle="Publicaciones médicas indexadas, tratados de referencia internacional sobre lesiones musculofasciales y galardones de la Sociedad Radiológica de Norteamérica"

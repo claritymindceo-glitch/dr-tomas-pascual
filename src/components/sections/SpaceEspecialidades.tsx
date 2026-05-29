@@ -45,7 +45,7 @@ export default function SpaceEspecialidades() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/clinica_especialidades_banner_1779991883542.png"
+        image="/images/clinica_especialidades_banner_1779991883542.png"
         tag="ATENCIÓN INTEGRAL"
         title="ESPECIALIDADES DE ALTA COMPETENCIA"
         subtitle="Cuidado clínico de élite para optimizar los procesos de cicatrización y acelerar el retorno al juego"

@@ -19,28 +19,28 @@ export default function SpaceInicio({ socialProofVisible }: SpaceInicioProps) {
 
   const slides = [
     {
-      image: "/src/assets/images/rugby_biomedical_banner_1779988401944.png",
+      image: "/images/rugby_biomedical_banner_1779988401944.png",
       title: "COBERTURA BIOMÉDICA OFICIAL",
       subtitle: "Diagnóstico por Imágenes en el Campo con Los Pumas",
       description: "Evaluaciones ecográficas dinámicas instantáneas y caracterización de microlesiones musculares de urgencia durante entrenamientos de alta competencia.",
       tag: "LOS PUMAS U.A.R"
     },
     {
-      image: "/src/assets/images/musculoskeletal_ultrasound_1779988420746.png",
+      image: "/images/musculoskeletal_ultrasound_1779988420746.png",
       title: "ECOGRAFÍA DINÁMICA MUSCULOESQUELÉTICA",
       subtitle: "Exploración Funcional Avanzada en Tiempo Real",
       description: "Visualización interactiva milimétrica de rangos de contracción muscular, deslizamiento tendinoso y puntos de fricción mediante transductores de alta densidad de radiofrecuencia.",
       tag: "DIAGNÓSTICO ALTA RESOLUCIÓN"
     },
     {
-      image: "/src/assets/images/ultrasound_guided_injection_1779988437432.png",
+      image: "/images/ultrasound_guided_injection_1779988437432.png",
       title: "INTERVENCIONISMO ECOGUIADO MSK",
       subtitle: "Infiltraciones y Bloqueos Facetarios de Precisión",
       description: "Infiltraciones dirigidas milimétricamente bajo guía ecográfica directa con Plasma Rico en Plaquetas (PRP) y terapias biológicas regeneradoras de colágeno.",
       tag: "TERAPIAS BIOLÓGICAS DE ALTA GAMA"
     },
     {
-      image: "/src/assets/images/biomechanics_athlete_recovery_1779988453921.png",
+      image: "/images/biomechanics_athlete_recovery_1779988453921.png",
       title: "BIOMECÁNICA & RECUPERACIÓN DEPORTIVA",
       subtitle: "Protocolo Científico de Alta de Juego (Return to Play)",
       description: "Estudios comparativos bilaterales biológicos precisos para determinar el momento exacto para la restitución segura de los vectores de fuerza muscular.",

@@ -535,7 +535,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <div className="w-[36px] h-[36px] rounded-full flex items-center justify-center overflow-hidden border border-black/[0.08] bg-white relative">
               <img 
-                src="/src/assets/images/dr_tomas_pascual_1779914444643.png" 
+                src="/images/dr_tomas_pascual_1779914444643.png" 
                 alt="Dr. Tomás Pascual" 
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
@@ -654,7 +654,7 @@ export default function App() {
         
         <div className="w-full h-full rounded-full flex items-center justify-center bg-white relative overflow-hidden">
           <img 
-            src="/src/assets/images/dr_tomas_pascual_1779914444643.png" 
+            src="/images/dr_tomas_pascual_1779914444643.png" 
             alt="Dr. Tomás Pascual" 
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

@@ -5,7 +5,7 @@ export default function SpaceEnfoque() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/musculoskeletal_ultrasound_1779988420746.png"
+        image="/images/musculoskeletal_ultrasound_1779988420746.png"
         tag="PRECISIÓN CLÍNICA"
         title="ENFOQUE BIOMÉDICO Y PRECISIÓN"
         subtitle="La intersección exacta entre anatomía de alto impacto deportivo y ecografía estructural en tiempo real"

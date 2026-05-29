@@ -14,7 +14,7 @@ export default function SpaceTrayectoria() {
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
-        image="/src/assets/images/doctor_trayectoria_banner_1779991863863.png"
+        image="/images/doctor_trayectoria_banner_1779991863863.png"
         tag="PERFIL ACADÉMICO"
         title="TRAYECTORIA ACADÉMICA Y CLÍNICA"
         subtitle="Diploma de Honor UBA, disector sénior galardonado RSNA Magna Cum Laude y líder de consultorías de élite"

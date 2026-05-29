@@ -27,8 +27,8 @@ npm start      # producción (dist/)
 
 ## Variables de entorno (nombres)
 
-- `GEMINI_API_KEY` — API Gemini (consultas `/api/consult`, fallback)
-- `ANTHROPIC_API_KEY` — proxy `/v1/messages` (opcional)
+- `OPENAI_API_KEY` — asistente clínico (`/api/consult`, `/v1/messages`)
+- `OPENAI_MODEL` — opcional (default `gpt-4o-mini`)
 - `PORT` — puerto del servidor (default 5050)
 - `NODE_ENV` — `production` sirve estáticos desde `dist/`
 - `DISABLE_HMR` — desactiva HMR en Vite si es `true`

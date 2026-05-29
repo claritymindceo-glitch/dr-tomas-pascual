@@ -61,7 +61,21 @@ npm start      # producción (dist/)
 
 **CSS:** `.neon-relief-card` = sombra suave blanca; gold override en `index.css` apunta a `#9a7b2e` sobre fondos claros.
 
+## Infraestructura (ClarityMind)
+
+| Servicio | ID / URL | Cuenta |
+|----------|----------|--------|
+| **Firebase** | `dr-tomas-pascual` · [Console](https://console.firebase.google.com/project/dr-tomas-pascual) | claritymind.ceo@gmail.com |
+| **Firestore** | DB `(default)`, región `nam5` · `firestore.rules` | mismo proyecto |
+| **GitHub** | [claritymindceo-glitch/dr-tomas-pascual](https://github.com/claritymindceo-glitch/dr-tomas-pascual) | claritymindceo-glitch |
+| **Vercel** | `dr-tomas-pascual` · team `claritymindceo-9119s-projects` · `prj_58URVDusdqfMjJaP8ebSDQ2uJbaP` | claritymindceo-9119 |
+
+- **Prod:** https://dr-tomas-pascual.vercel.app
+- **APIs serverless:** `api/consult.ts`, `api/v1/messages.ts` (Gemini + fallback Anthropic)
+- **Último deploy:** 2026-05-29 (V2 perla/teal)
+
 ## Deuda / notas
 
 - Carpeta del repo se llama `remix_-pagina-dr-pascual` pero el stack es Vite+Express, no Remix.
 - Los tokens `@theme` existen pero los componentes usan hex inline. Migrar a tokens Tailwind mejoraría mantenibilidad.
+- En Vercel producción deben existir `GEMINI_API_KEY` (y opcional `ANTHROPIC_API_KEY`).

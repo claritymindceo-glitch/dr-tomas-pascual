@@ -218,7 +218,7 @@ export default function SpaceAsistente({
                   <span className="font-light">CONEXIÓN CLÍNICA INTEGRADA (S.I.M.)</span>
                 </div>
 
-                <div className="bg-[#f0eeea] p-4 border border-black/[0.06] h-[340px] overflow-y-auto space-y-4 rounded-sm">
+                <div className="bg-[#f0eeea] p-4 border border-black/[0.06] h-[280px] sm:h-[340px] overflow-y-auto space-y-4 rounded-sm">
                   {chatMessages.map((msg, idx) => (
                     <div
                       key={idx}

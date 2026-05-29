@@ -9,6 +9,7 @@
   "rewrites": [
     { "source": "/v1/messages", "destination": "/api/v1/messages" },
     { "source": "/api/consult", "destination": "/api/consult" },
+    { "source": "/api/contact", "destination": "/api/contact" },
     { "source": "/((?!api/|images/).*)", "destination": "/index.html" }
   ]
 }

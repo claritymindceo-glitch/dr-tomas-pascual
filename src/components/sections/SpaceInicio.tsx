@@ -97,7 +97,7 @@ export default function SpaceInicio({ socialProofVisible }: SpaceInicioProps) {
       </section>
 
       {/* Caption del slide activo — debajo de la imagen */}
-      <section className="bg-[#f0eeea] border-b border-black/[0.06] px-6 sm:px-12 md:px-20 py-8">
+      <section className="bg-[#f0eeea] border-b border-black/[0.06] px-4 sm:px-12 md:px-20 py-6 sm:py-8">
         <div className="max-w-[1140px] mx-auto space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">

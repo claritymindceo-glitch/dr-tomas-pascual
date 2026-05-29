@@ -28,6 +28,10 @@
 }
 
 @layer base {
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     background-color: #f0eeea;
     color: #2c2a26;

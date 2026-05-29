@@ -63,10 +63,40 @@ import SpaceInvestigaciones from "./components/sections/SpaceInvestigaciones";
 import SpaceAsistente from "./components/sections/SpaceAsistente";
 import SpaceSedes from "./components/sections/SpaceSedes";
 import SpacePortal from "./components/sections/SpacePortal";
+import ConsultForm from "./components/ConsultForm";
+
+const NAV_ITEMS = [
+  { id: 0, label: "Inicio" },
+  { id: 1, label: "Enfoque" },
+  { id: 2, label: "Trayectoria" },
+  { id: 3, label: "Especialidades" },
+  { id: 4, label: "Investigaciones" },
+  { id: 5, label: "Asistente" },
+  { id: 6, label: "Sedes" },
+  { id: 7, label: "Portal" },
+] as const;
+
+const PAGER_ITEMS = [
+  { id: 0, label: "Inicio", short: "Ini" },
+  { id: 1, label: "Enfoque", short: "Enf" },
+  { id: 2, label: "Trayectoria", short: "Tra" },
+  { id: 3, label: "Especialidades", short: "Esp" },
+  { id: 4, label: "Investigaciones", short: "Inv" },
+  { id: 5, label: "Asistente", short: "Asi" },
+  { id: 6, label: "Sedes", short: "Sed" },
+  { id: 7, label: "Portal", short: "Por" },
+] as const;
+
+/** Misma curva y duración para nav activo + cambio de sección */
+const UNIFIED_PAGE_TRANSITION = {
+  duration: 0.38,
+  ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
+};
 
 export default function App() {
   // Mobile Nav Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [consultFormOpen, setConsultFormOpen] = useState(false);
 
   // Mac-Style horizontal spaces states for horizontal navigation
   const [[spaceIndex, direction], setSpace] = useState([0, 0]);
@@ -75,10 +105,34 @@ export default function App() {
     const current = spaceIndex;
     const dir = newSpace > current ? 1 : -1;
     setSpace([newSpace, dir]);
-    
-    // Smooth scroll top on change
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen || consultFormOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen, consultFormOpen]);
+
+  useEffect(() => {
+    if (!consultFormOpen) return;
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setConsultFormOpen(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [consultFormOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [mobileMenuOpen]);
 
   // Keyboard navigation for Space-to-Space feeling
   useEffect(() => {
@@ -113,6 +167,20 @@ export default function App() {
   const [floatingLoading, setFloatingLoading] = useState(false);
   const [exchangeCount, setExchangeCount] = useState(0);
   const floatingChatEndRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const updateHeight = () => setHeaderHeight(el.offsetHeight);
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mobileMenuOpen]);
 
   // Auto-scroll floating chat to bottom
   useEffect(() => {
@@ -287,110 +355,154 @@ export default function App() {
     enter: (dir: number) => ({
       x: dir > 0 ? "100%" : dir < 0 ? "-100%" : 0,
       opacity: 0,
-      scale: 0.98,
+      scale: 0.992,
     }),
     center: {
       x: 0,
       opacity: 1,
       scale: 1,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 32 },
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.3 }
-      }
+      transition: UNIFIED_PAGE_TRANSITION,
     },
     exit: (dir: number) => ({
       x: dir < 0 ? "100%" : dir > 0 ? "-100%" : 0,
       opacity: 0,
-      scale: 0.98,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 32 },
-        opacity: { duration: 0.25 },
-        scale: { duration: 0.3 }
-      }
-    })
+      scale: 0.992,
+      transition: UNIFIED_PAGE_TRANSITION,
+    }),
   };
 
   return (
-    <div className="min-h-screen bg-[#f0eeea] text-[#1a1a18] font-sans selection:bg-[#4a8499]/15 selection:text-[#1a1a18] flex flex-col justify-between">
+    <div className="min-h-screen bg-[#f0eeea] text-[#1a1a18] font-sans selection:bg-[#4a8499]/15 selection:text-[#1a1a18] flex flex-col justify-between overflow-x-hidden">
       
-      {/* HEADER / NAVIGATION BAR (Always Horizontal & Shrunk Title to Fit Perfectly) */}
-      <header className="sticky top-0 z-50 w-full bg-white/92 backdrop-blur-md border-b border-black/[0.06] shadow-[0_1px_0_rgba(0,0,0,0.04)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-4 sm:py-0 sm:h-24 flex flex-col sm:flex-row items-center justify-between gap-y-3 sm:gap-y-0 transition-all duration-300">
-          
-          <div className="flex flex-col space-y-0.5 items-center sm:items-start text-center sm:text-left shrink-0 whitespace-nowrap">
-            <button 
-              onClick={() => paginate(0)} 
-              className="font-display text-[11px] xs:text-[12px] sm:text-[13px] md:text-[13.5px] lg:text-[14.5px] xl:text-[15px] tracking-[0.18em] font-semibold text-[#1a1a18] uppercase hover:text-[#4a8499] transition-colors duration-300 whitespace-nowrap cursor-pointer text-left"
-            >
-              DR. TOMÁS PASCUAL
-            </button>
-            <span className="font-mono text-[5.5px] xs:text-[6.2px] sm:text-[7.2px] md:text-[7.5px] text-[#6b6760] tracking-[0.22em] uppercase font-light whitespace-nowrap pointer-events-none">
-              DIAGNÓSTICO POR IMÁGENES · ALTA COMPETENCIA
-            </span>
+      {/* HEADER — desktop: 2 filas / mobile: menú hamburguesa */}
+      <header
+        ref={headerRef}
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-white/92 backdrop-blur-md border-b border-black/[0.06] shadow-[0_1px_0_rgba(0,0,0,0.04)]"
+      >
+        <div className="max-w-[1440px] mx-auto pl-3 pr-4 sm:pl-4 sm:pr-6 lg:pl-4 lg:pr-10 xl:pl-5 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col space-y-0.5 min-w-0 flex-1">
+              <button
+                onClick={() => paginate(0)}
+                className="font-display text-[13px] sm:text-[16px] md:text-[17px] lg:text-[18px] tracking-[0.14em] sm:tracking-[0.16em] font-semibold text-[#1a1a18] uppercase hover:text-[#4a8499] transition-colors duration-300 cursor-pointer text-left truncate"
+              >
+                DR. TOMÁS PASCUAL
+              </button>
+              <span className="font-mono text-[7px] sm:text-[9px] md:text-[9.5px] text-[#6b6760] tracking-[0.14em] sm:tracking-[0.18em] uppercase font-light leading-snug line-clamp-2 sm:line-clamp-none">
+                DIAGNÓSTICO POR IMÁGENES · ALTA COMPETENCIA
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setConsultFormOpen(true);
+                }}
+                className="hidden sm:inline-flex px-4 py-2 sm:px-5 sm:py-2.5 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] tracking-[0.16em] font-medium text-[10px] sm:text-[11px] md:text-[12px] uppercase hover:bg-[#4a8499]/18 hover:border-[#4a8499]/50 transition-all duration-300 rounded-sm cursor-pointer"
+              >
+                Consultar
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                className="lg:hidden p-2.5 border border-black/[0.08] text-[#1a1a18] hover:border-[#4a8499]/40 hover:text-[#4a8499] transition-all duration-200 cursor-pointer"
+                aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
-          <nav className="flex items-center justify-center flex-wrap gap-x-2.5 xs:gap-x-3.5 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 xl:gap-x-8 text-[7.5px] xs:text-[8px] sm:text-[8.5px] md:text-[9.2px] lg:text-[9.5px] uppercase tracking-[0.15em] font-medium shrink-0">
-            <button 
-              onClick={() => paginate(0)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 0 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Inicio
-            </button>
-            <button 
-              onClick={() => paginate(1)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 1 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Enfoque
-            </button>
-            <button 
-              onClick={() => paginate(2)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 2 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Trayectoria
-            </button>
-            <button 
-              onClick={() => paginate(3)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 3 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Especialidades
-            </button>
-            <button 
-              onClick={() => paginate(4)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 4 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Investigaciones
-            </button>
-            <button 
-              onClick={() => paginate(5)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 5 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Asistente
-            </button>
-            <button 
-              onClick={() => paginate(6)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 6 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Sedes
-            </button>
-            <button 
-              onClick={() => paginate(7)} 
-              className={`transition-all duration-300 ease-out whitespace-nowrap cursor-pointer pb-1 sm:pb-1.5 ${spaceIndex === 7 ? "text-[#1a1a18] font-semibold border-b border-[#4a8499] tracking-[0.17em]" : "text-[#6b6760] font-normal hover:text-[#1a1a18]"}`}
-            >
-              Portal
-            </button>
-            <button 
-              onClick={() => paginate(5)} 
-              className="px-3.5 py-1.5 xs:px-4 xs:py-2 md:px-5 md:py-2 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] tracking-[0.18em] font-medium text-[7.5px] xs:text-[8px] sm:text-[8.5px] md:text-[9.2px] lg:text-[9.5px] uppercase hover:bg-[#4a8499]/18 hover:border-[#4a8499]/50 transition-all duration-300 rounded-sm whitespace-nowrap ml-1 sm:ml-2.5 cursor-pointer"
-            >
-              Consultar
-            </button>
+          {/* Nav desktop */}
+          <nav className="hidden lg:flex mt-3 pt-3 border-t border-black/[0.05] flex-wrap items-center gap-x-0.5 xl:gap-x-1 gap-y-2 text-[11px] md:text-[12px] uppercase tracking-[0.12em] font-medium">
+            {NAV_ITEMS.map(({ id, label }) => {
+              const isActive = spaceIndex === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => paginate(id)}
+                  className={`relative px-3 py-1.5 whitespace-nowrap cursor-pointer rounded-sm transition-[color,background-color] duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                    isActive
+                      ? "text-[#1a1a18] font-semibold"
+                      : "text-[#6b6760] font-normal hover:text-[#1a1a18] hover:bg-black/[0.025]"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId="header-nav-active"
+                      className="absolute inset-0 border border-[#4a8499]/35 bg-[#4a8499]/[0.07] rounded-sm"
+                      transition={UNIFIED_PAGE_TRANSITION}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="relative z-10">{label}</span>
+                </button>
+              );
+            })}
           </nav>
+
+          {/* Nav mobile — panel desplegable */}
+          <AnimatePresence initial={false}>
+            {mobileMenuOpen && (
+              <motion.nav
+                key="mobile-nav-panel"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={UNIFIED_PAGE_TRANSITION}
+                className="lg:hidden mt-3 pt-3 border-t border-black/[0.05] grid grid-cols-2 gap-2 pb-1"
+              >
+                {NAV_ITEMS.map(({ id, label }) => {
+                  const isActive = spaceIndex === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => paginate(id)}
+                      className={`relative text-left px-3 py-3 text-[12px] uppercase tracking-[0.1em] border rounded-sm transition-[color,background-color,border-color,transform] duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer active:scale-[0.98] ${
+                        isActive
+                          ? "text-[#1a1a18] font-semibold border-[#4a8499]/30"
+                          : "text-[#6b6760] font-normal border-black/[0.06] hover:bg-black/[0.03] hover:border-black/[0.1]"
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.span
+                          layoutId="header-nav-active-mobile"
+                          className="absolute inset-0 bg-[#4a8499]/10 rounded-sm"
+                          transition={UNIFIED_PAGE_TRANSITION}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className="relative z-10">{label}</span>
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setConsultFormOpen(true);
+                  }}
+                  className="col-span-2 mt-1 w-full py-3 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] tracking-[0.14em] font-medium text-[12px] uppercase hover:bg-[#4a8499]/18 transition-all duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)] rounded-sm cursor-pointer sm:hidden active:scale-[0.99]"
+                >
+                  Consultar
+                </button>
+              </motion.nav>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
+      <div
+        aria-hidden="true"
+        className="shrink-0 w-full min-h-[68px] lg:min-h-[118px]"
+        style={headerHeight > 0 ? { height: headerHeight } : undefined}
+      />
+
       <main className="flex-grow w-full relative overflow-hidden flex flex-col justify-start">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+        <AnimatePresence initial={false} custom={direction} mode="sync">
           <motion.div
             key={spaceIndex}
             custom={direction}
@@ -420,56 +532,54 @@ export default function App() {
             {spaceIndex === 6 && <SpaceSedes />}
             {spaceIndex === 7 && <SpacePortal />}
 
-            {/* HIGH END PAGER BOTTOM SYSTEM FOR DESKTOP SWIPE CONTROL */}
-            <div className="flex flex-col sm:flex-row items-center justify-between mt-12 mb-16 pt-8 border-t border-black/[0.06] max-w-[1140px] mx-auto px-6 font-sans gap-y-4">
+            {/* Pager — compacto en mobile */}
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-8 sm:mt-12 mb-10 sm:mb-16 pt-6 sm:pt-8 border-t border-black/[0.06] max-w-[1140px] mx-auto px-4 sm:px-6 font-sans gap-y-4">
               {spaceIndex > 0 ? (
                 <button
                   type="button"
                   onClick={() => paginate(spaceIndex - 1)}
-                  className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.25em] text-[#5c5954] hover:text-[#1a1a18] transition duration-200 cursor-pointer"
+                  className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#5c5954] hover:text-[#1a1a18] transition duration-200 cursor-pointer order-2 sm:order-1"
                 >
                   <ChevronLeft className="w-4 h-4 text-[#4a8499]" /> Anterior
                 </button>
               ) : (
-                <div className="hidden sm:block w-20" />
+                <div className="hidden sm:block w-20 order-1" />
               )}
               
-              <div className="flex flex-wrap gap-2.5 justify-center items-center">
-                {[0, 1, 2, 3, 4, 5, 6, 7].map((idx) => {
-                  const names = ["Inicio", "Enfoque", "Trayectoria", "Especialidades", "Investigaciones", "Asistente AI", "Sedes", "Portal del Paciente"];
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => paginate(idx)}
-                      title={names[idx]}
-                      className={`px-3 py-1.5 transition-all text-[8px] uppercase tracking-widest duration-300 font-light border cursor-pointer ${
-                        spaceIndex === idx
-                          ? "bg-[#4a8499]/10 border-[#4a8499] text-[#4a8499] font-normal"
-                          : "border-black/[0.08] text-[#5c5954] hover:text-[#1a1a18] hover:border-black/15"
-                      }`}
-                    >
-                      {names[idx]}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap gap-1.5 sm:gap-2.5 justify-center items-center order-1 sm:order-2 w-full sm:w-auto max-w-full">
+                {PAGER_ITEMS.map(({ id, label, short }) => (
+                  <button
+                    key={id}
+                    onClick={() => paginate(id)}
+                    title={label}
+                    className={`px-2 sm:px-3 py-1 sm:py-1.5 transition-all text-[9px] sm:text-[8px] uppercase tracking-widest duration-300 font-light border cursor-pointer min-w-[2.25rem] sm:min-w-0 ${
+                      spaceIndex === id
+                        ? "bg-[#4a8499]/10 border-[#4a8499] text-[#4a8499] font-normal"
+                        : "border-black/[0.08] text-[#5c5954] hover:text-[#1a1a18] hover:border-black/15"
+                    }`}
+                  >
+                    <span className="sm:hidden">{short}</span>
+                    <span className="hidden sm:inline">{label}</span>
+                  </button>
+                ))}
               </div>
 
               {spaceIndex < 7 ? (
                 <button
                   type="button"
                   onClick={() => paginate(spaceIndex + 1)}
-                  className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.25em] text-[#4a8499] hover:text-[#1a1a18] transition duration-200 font-medium cursor-pointer"
+                  className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#4a8499] hover:text-[#1a1a18] transition duration-200 font-medium cursor-pointer order-3"
                 >
                   Siguiente <ChevronRight className="w-4 h-4 text-[#4a8499]" />
                 </button>
               ) : (
-                <div className="hidden sm:block w-20" />
+                <div className="hidden sm:block w-20 order-3" />
               )}
             </div>
 
             {/* SECTION 9 — FOOTER inside active Space so each has a clean final reading block */}
-            <footer className="bg-[#e8e6e1] text-[#5c5954] text-xs py-12 border-t border-black/[0.06] relative z-20 font-sans">
-              <div className="max-w-[1140px] mx-auto px-6 space-y-8">
+            <footer className="bg-[#e8e6e1] text-[#5c5954] text-xs py-10 sm:py-12 border-t border-black/[0.06] relative z-20 font-sans">
+              <div className="max-w-[1140px] mx-auto px-4 sm:px-6 space-y-8">
                 
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-black/[0.06]">
                   <div className="flex flex-col">
@@ -521,10 +631,12 @@ export default function App() {
         </AnimatePresence>
       </main>
 
+      {consultFormOpen && <ConsultForm onClose={() => setConsultFormOpen(false)} />}
+
       {/* FLOATING BOT CONVERSATIONAL ASSISTANT SYSTEM */}
       {/* Slide-up panel */}
       <div
-        className={`fixed bottom-24 right-6 w-[360px] h-[520px] bg-white border border-black/[0.08] rounded-[24px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.12)] z-[9998] flex flex-col transition-all duration-300 ease-in-out ${
+        className={`fixed bottom-[4.5rem] sm:bottom-24 left-4 right-4 sm:left-auto sm:right-6 sm:w-[360px] h-[min(520px,calc(100dvh-7rem))] bg-white border border-black/[0.08] rounded-[24px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.12)] z-[9998] flex flex-col transition-all duration-300 ease-in-out ${
           isFloatingBotOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 translate-y-6 pointer-events-none"
@@ -647,7 +759,7 @@ export default function App() {
       {/* Floating Circle Button Trigger */}
       <button
         onClick={() => setIsFloatingBotOpen(!isFloatingBotOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full z-[9999] shadow-[0_8px_24px_rgba(0,0,0,0.15)] cursor-pointer hover:shadow-[0_0_0_3px_rgba(74,132,153,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 group flex items-center justify-center bg-white border border-black/[0.08] overflow-hidden bot-glow-pulse"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full z-[9999] shadow-[0_8px_24px_rgba(0,0,0,0.15)] cursor-pointer hover:shadow-[0_0_0_3px_rgba(74,132,153,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 group flex items-center justify-center bg-white border border-black/[0.08] overflow-hidden bot-glow-pulse"
         aria-label="Abrir asistente digital"
       >
         <span className="absolute top-[2px] right-[2px] w-3 h-3 bg-emerald-500 rounded-full border-[1.5px] border-white z-20 animate-pulse"></span>

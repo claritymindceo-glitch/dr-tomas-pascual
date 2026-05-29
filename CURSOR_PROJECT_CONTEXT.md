@@ -29,6 +29,12 @@ npm start      # producción (dist/)
 
 - `OPENAI_API_KEY` — asistente clínico (`/api/consult`, `/v1/messages`)
 - `OPENAI_MODEL` — opcional (default `gpt-4o-mini`)
+- `SMTP_HOST` — default `smtp.gmail.com`
+- `SMTP_PORT` — default `587`
+- `SMTP_USER` — default `claritymind.ceo@gmail.com`
+- `SMTP_PASS` — contraseña de aplicación Gmail (obligatoria)
+- `CONTACT_EMAIL_TO` — default temporal `claritymind.ceo@gmail.com`
+- `CONTACT_EMAIL_FROM` — remitente visible (default Consultas Dr. Pascual)
 - `PORT` — puerto del servidor (default 5050)
 - `NODE_ENV` — `production` sirve estáticos desde `dist/`
 - `DISABLE_HMR` — desactiva HMR en Vite si es `true`
@@ -36,7 +42,7 @@ npm start      # producción (dist/)
 ## Arquitectura
 
 - `server.ts` — Express, APIs, Vite middleware en dev
-- `src/App.tsx` — shell horizontal por secciones
+- `src/App.tsx` — shell horizontal por secciones; header `fixed` con espaciador dinámico (`ResizeObserver`)
 - `src/components/sections/` — espacios (Inicio, Enfoque, etc.)
 - `src/data.ts` — datos estáticos (papers, sedes, guías)
 
@@ -71,7 +77,7 @@ npm start      # producción (dist/)
 | **Vercel** | `dr-tomas-pascual` · team `claritymindceo-9119s-projects` · `prj_58URVDusdqfMjJaP8ebSDQ2uJbaP` | claritymindceo-9119 |
 
 - **Prod:** https://dr-tomas-pascual.vercel.app
-- **APIs serverless:** `api/consult.ts`, `api/v1/messages.ts` (Gemini + fallback Anthropic)
+- **APIs serverless:** `api/consult.ts`, `api/v1/messages.ts`, `api/contact.ts` (formulario → email vía Gmail SMTP)
 - **Último deploy:** 2026-05-29 (V2 perla/teal)
 
 ## Deuda / notas

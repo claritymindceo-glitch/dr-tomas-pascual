@@ -7,6 +7,7 @@ import {
   OPENAI_MODEL,
   PASCUAL_KNOWLEDGE_CONTEXT,
 } from "./api/_lib/ai.js";
+import { sendContactEmail, validateContactPayload } from "./api/_lib/contact-email.js";
 
 dotenv.config();
 
@@ -39,6 +40,30 @@ app.post("/api/consult", async (req, res) => {
     res.status(500).json({
       error: "Ocurrió un error al procesar el diagnóstico inteligente.",
       details,
+    });
+  }
+});
+
+app.post("/api/contact", async (req, res) => {
+  try {
+    const payload = validateContactPayload(req.body);
+    await sendContactEmail(payload);
+    res.json({ ok: true, message: "Consulta enviada correctamente." });
+  } catch (error: unknown) {
+    const details = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error sending contact email:", error);
+    const status =
+      details.includes("obligatorio") ||
+      details.includes("válido") ||
+      details.includes("inválid")
+        ? 400
+        : 500;
+    res.status(status).json({
+      error:
+        status === 400
+          ? details
+          : "No se pudo enviar la consulta. Intentá nuevamente en unos minutos.",
+      details: status === 500 ? details : undefined,
     });
   }
 });

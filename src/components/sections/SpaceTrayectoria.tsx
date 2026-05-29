@@ -50,7 +50,7 @@ export default function SpaceTrayectoria() {
                 </div>
 
                 {/* 3 Stats Grid */}
-                <div className="grid grid-cols-3 gap-6 pt-6 border-t border-[#4a8499]/18">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 pt-6 border-t border-[#4a8499]/18">
                   <div>
                     <span className="font-sans text-2xl sm:text-3xl text-[#9a7b2e] font-light block">
                       <AnimatedCounter target={20} suffix="+" />

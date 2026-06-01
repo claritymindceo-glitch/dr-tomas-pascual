@@ -2,11 +2,25 @@
 
 - **Ruta:** `/Users/dario/Desktop/Proyectos Cursor/DR TOMAS PASCUAL V2/remix_-pagina-dr-pascual`
 - **Creado contexto:** 2026-05-29
-- **Última actualización:** 2026-05-29
+- **Última actualización:** 2026-05-31
 
 ## Resumen
 
-Sitio SPA del Dr. Tomás Agustín Pascual (diagnóstico por imágenes / trauma deportivo). Express + Vite en modo middleware; asistente con Gemini/Anthropic.
+Sitio SPA del Dr. Tomás Agustín Pascual (diagnóstico por imágenes / trauma deportivo). Express + Vite en modo middleware; asistente con OpenAI. **i18n:** español (Argentina), inglés y portugués con selector en el header (`src/i18n/`).
+
+## Internacionalización
+
+| Locale | Código | Persistencia |
+|--------|--------|--------------|
+| Español (Argentina) | `es-AR` | `localStorage` key `dr-pascual-locale` |
+| English | `en` | idem |
+| Português | `pt` | idem |
+
+- Provider: `src/i18n/context.tsx` — hook `useI18n()` → `{ locale, setLocale, m }`
+- Traducciones: `src/i18n/messages/{es-AR,en,pt}.ts`
+- Selector: `src/i18n/LanguageSelector.tsx` (header, junto a «Consultar»)
+- Al cambiar idioma: se reinician mensajes del chat flotante, consola asistente y logs CRM; `document.documentElement.lang` se actualiza
+- API `/api/consult` recibe `locale` en el body para respuestas del asistente en el idioma elegido
 
 ## Stack y comandos
 

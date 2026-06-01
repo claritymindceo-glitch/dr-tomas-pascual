@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Mail, Phone, Send, User, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { useI18n } from "../i18n/context";
 
 interface ConsultFormProps {
   onClose: () => void;
@@ -7,16 +8,10 @@ interface ConsultFormProps {
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
-const SUBJECT_OPTIONS = [
-  { value: "", label: "Seleccioná un motivo (opcional)" },
-  { value: "turno", label: "Solicitud de turno" },
-  { value: "estudios", label: "Estudios / preparación" },
-  { value: "informe", label: "Informe o reimpresión" },
-  { value: "administrativa", label: "Consulta administrativa" },
-  { value: "otro", label: "Otra consulta" },
-];
-
 export default function ConsultForm({ onClose }: ConsultFormProps) {
+  const { m } = useI18n();
+  const f = m.consultForm;
+
   const submissionIdRef = useRef(
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
@@ -58,7 +53,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "No se pudo enviar la consulta.");
+        throw new Error(data.error || f.submitError);
       }
 
       setStatus("success");
@@ -66,9 +61,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
       submittingRef.current = false;
       setStatus("error");
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Ocurrió un error inesperado. Por favor, intentá nuevamente."
+        error instanceof Error ? error.message : f.unexpectedError
       );
     }
   };
@@ -84,23 +77,23 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
         <div className="flex items-start justify-between gap-4 px-6 sm:px-8 pt-6 sm:pt-8 pb-4 border-b border-black/[0.06]">
           <div className="space-y-2 min-w-0">
             <span className="font-mono text-[9px] text-[#4a8499] uppercase tracking-[0.2em] block font-light">
-              Contacto directo
+              {f.tag}
             </span>
             <h2
               id="consult-form-title"
               className="font-sans text-xl sm:text-2xl text-[#1a1a18] font-light uppercase tracking-[0.08em]"
             >
-              Enviar consulta
+              {f.title}
             </h2>
             <p className="text-xs sm:text-sm text-[#5c5954] font-light leading-relaxed">
-              Completá el formulario y el equipo del Dr. Pascual recibirá tu mensaje por email.
+              {f.description}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="shrink-0 p-2 border border-black/[0.08] text-[#5c5954] hover:text-[#1a1a18] hover:border-[#4a8499]/30 transition-all cursor-pointer"
-            aria-label="Cerrar formulario"
+            aria-label={f.closeForm}
           >
             <X className="w-4 h-4" />
           </button>
@@ -112,11 +105,10 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
               <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
               <div className="space-y-2">
                 <h3 className="text-lg text-[#1a1a18] font-light uppercase tracking-wider">
-                  Consulta enviada
+                  {f.successTitle}
                 </h3>
                 <p className="text-sm text-[#5c5954] font-light max-w-md mx-auto leading-relaxed">
-                  Recibimos tu mensaje. El consultorio del Dr. Pascual se pondrá en contacto a la brevedad
-                  en el email que indicaste.
+                  {f.successMessage}
                 </p>
               </div>
               <button
@@ -124,7 +116,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
                 onClick={onClose}
                 className="mt-4 px-6 py-3 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] text-[11px] uppercase tracking-[0.16em] hover:bg-[#4a8499]/18 transition-all cursor-pointer"
               >
-                Cerrar
+                {f.close}
               </button>
             </div>
           ) : (
@@ -132,7 +124,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block space-y-1.5">
                   <span className="text-[10px] uppercase tracking-wider text-[#5c5954] font-light flex items-center gap-1.5">
-                    <User className="w-3 h-3 text-[#4a8499]/75" /> Nombre completo *
+                    <User className="w-3 h-3 text-[#4a8499]/75" /> {f.name}
                   </span>
                   <input
                     type="text"
@@ -140,21 +132,21 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
                     minLength={2}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Ej: María González"
+                    placeholder={f.namePlaceholder}
                     className="w-full bg-[#f7f6f3] border border-black/[0.08] px-4 py-3 text-sm text-[#1a1a18] placeholder-[#8a8680] focus:outline-none focus:border-[#4a8499]/50 transition"
                   />
                 </label>
 
                 <label className="block space-y-1.5">
                   <span className="text-[10px] uppercase tracking-wider text-[#5c5954] font-light flex items-center gap-1.5">
-                    <Mail className="w-3 h-3 text-[#4a8499]/75" /> Email *
+                    <Mail className="w-3 h-3 text-[#4a8499]/75" /> {f.email}
                   </span>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Ej: maria@email.com"
+                    placeholder={f.emailPlaceholder}
                     className="w-full bg-[#f7f6f3] border border-black/[0.08] px-4 py-3 text-sm text-[#1a1a18] placeholder-[#8a8680] focus:outline-none focus:border-[#4a8499]/50 transition"
                   />
                 </label>
@@ -163,27 +155,27 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block space-y-1.5">
                   <span className="text-[10px] uppercase tracking-wider text-[#5c5954] font-light flex items-center gap-1.5">
-                    <Phone className="w-3 h-3 text-[#4a8499]/75" /> Teléfono
+                    <Phone className="w-3 h-3 text-[#4a8499]/75" /> {f.phone}
                   </span>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ej: +54 11 1234-5678"
+                    placeholder={f.phonePlaceholder}
                     className="w-full bg-[#f7f6f3] border border-black/[0.08] px-4 py-3 text-sm text-[#1a1a18] placeholder-[#8a8680] focus:outline-none focus:border-[#4a8499]/50 transition"
                   />
                 </label>
 
                 <label className="block space-y-1.5">
                   <span className="text-[10px] uppercase tracking-wider text-[#5c5954] font-light">
-                    Motivo de consulta
+                    {f.subject}
                   </span>
                   <select
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     className="w-full bg-[#f7f6f3] border border-black/[0.08] px-4 py-3 text-sm text-[#1a1a18] focus:outline-none focus:border-[#4a8499]/50 transition"
                   >
-                    {SUBJECT_OPTIONS.map((option) => (
+                    {f.subjects.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -194,7 +186,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
 
               <label className="block space-y-1.5">
                 <span className="text-[10px] uppercase tracking-wider text-[#5c5954] font-light">
-                  Tu consulta *
+                  {f.message}
                 </span>
                 <textarea
                   required
@@ -202,7 +194,7 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
                   rows={5}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Escribí tu consulta con el mayor detalle posible..."
+                  placeholder={f.messagePlaceholder}
                   className="w-full bg-[#f7f6f3] border border-black/[0.08] px-4 py-3 text-sm text-[#1a1a18] placeholder-[#8a8680] focus:outline-none focus:border-[#4a8499]/50 transition resize-y min-h-[120px]"
                 />
               </label>
@@ -221,20 +213,19 @@ export default function ConsultForm({ onClose }: ConsultFormProps) {
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] text-[11px] uppercase tracking-[0.16em] hover:bg-[#4a8499]/18 hover:border-[#4a8499]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
-                  {status === "submitting" ? "Enviando..." : "Enviar consulta"}
+                  {status === "submitting" ? f.sending : f.submit}
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
                   className="px-6 py-3 border border-black/[0.08] text-[#5c5954] text-[11px] uppercase tracking-[0.16em] hover:text-[#1a1a18] hover:border-black/15 transition-all cursor-pointer"
                 >
-                  Cancelar
+                  {f.cancel}
                 </button>
               </div>
 
               <p className="text-[10px] text-[#8a8680] font-light leading-relaxed border-t border-black/[0.06] pt-4">
-                Este formulario no reemplaza una consulta médica presencial ni atiende urgencias.
-                Para emergencias, acudí a guardia o servicios de emergencia médica.
+                {f.disclaimer}
               </p>
             </form>
           )}

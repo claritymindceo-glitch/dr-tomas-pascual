@@ -43,17 +43,9 @@ import {
   Shield,
   Check
 } from "lucide-react";
-import {
-  CURRENT_POSITIONS,
-  PREVIOUS_POSITIONS,
-  EDUCATION_MILESTONES,
-  RECOGNITIONS_ABROAD,
-  ACADEMIC_FELLOWSHIPS,
-  RSNA_HONORS,
-  ACADEMIC_PAPERS
-} from "./data";
-import AnimatedCounter from "./components/AnimatedCounter";
 import { motion, AnimatePresence } from "motion/react";
+import { formatMessage, useI18n } from "./i18n/context";
+import LanguageSelector from "./i18n/LanguageSelector";
 
 // Import modular Horizontal Space layouts
 import SpaceInicio from "./components/sections/SpaceInicio";
@@ -68,28 +60,6 @@ import ConsultForm from "./components/ConsultForm";
 
 const AI_AVATAR_SRC = "/images/dr_pascual_asistente_avatar.png";
 
-const NAV_ITEMS = [
-  { id: 0, label: "Inicio" },
-  { id: 1, label: "Enfoque" },
-  { id: 2, label: "Trayectoria" },
-  { id: 3, label: "Especialidades" },
-  { id: 4, label: "Investigaciones" },
-  { id: 5, label: "Asistente" },
-  { id: 6, label: "Sedes" },
-  { id: 7, label: "Portal" },
-] as const;
-
-const PAGER_ITEMS = [
-  { id: 0, label: "Inicio", short: "Ini" },
-  { id: 1, label: "Enfoque", short: "Enf" },
-  { id: 2, label: "Trayectoria", short: "Tra" },
-  { id: 3, label: "Especialidades", short: "Esp" },
-  { id: 4, label: "Investigaciones", short: "Inv" },
-  { id: 5, label: "Asistente", short: "Asi" },
-  { id: 6, label: "Sedes", short: "Sed" },
-  { id: 7, label: "Portal", short: "Por" },
-] as const;
-
 /** Misma curva y duración para nav activo + cambio de sección */
 const UNIFIED_PAGE_TRANSITION = {
   duration: 0.38,
@@ -97,6 +67,8 @@ const UNIFIED_PAGE_TRANSITION = {
 };
 
 export default function App() {
+  const { m, locale } = useI18n();
+
   // Mobile Nav Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [consultFormOpen, setConsultFormOpen] = useState(false);
@@ -159,12 +131,10 @@ export default function App() {
 
   // Floating Chat states
   const [isFloatingBotOpen, setIsFloatingBotOpen] = useState(false);
-  const [floatingMessages, setFloatingMessages] = useState<Array<{ role: "user" | "assistant"; content: string; showChips?: boolean }>>([
-    {
-      role: "assistant",
-      content: "Bienvenido/a. Soy el asistente digital del Dr. Pascual. ¿En qué puedo orientarte hoy?",
-      showChips: true
-    }
+  const [floatingMessages, setFloatingMessages] = useState<
+    Array<{ role: "user" | "assistant"; content: string; showChips?: boolean }>
+  >(() => [
+    { role: "assistant", content: m.floatingChat.welcome, showChips: true },
   ]);
   const [floatingInput, setFloatingInput] = useState("");
   const [floatingLoading, setFloatingLoading] = useState(false);
@@ -213,7 +183,7 @@ export default function App() {
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 300,
-          system: "You are the digital assistant of Dr. Tomás Agustín Pascual, a world-class radiologist specializing in musculoskeletal imaging and sports injuries. Respond in Argentine Spanish. You help users understand the doctor's specialties, how to book appointments, what institutions he works at (HIMAN Barrio Norte, HIMAN San Isidro, IMAXE), and his academic profile. Keep responses under 3 sentences. Never use bullet points — only flowing conversational text. IMPORTANT: If this is the second exchange, offer direct contact details of the clinic.",
+          system: m.floatingChat.systemPrompt,
           messages: mapping
         })
       });
@@ -223,10 +193,15 @@ export default function App() {
       }
 
       const data = await response.json();
-      let responseText = data.content?.[0]?.text || data.text || "Disculpas, ocurrió un inconveniente temporal.";
+      let responseText =
+        data.content?.[0]?.text || data.text || m.floatingChat.errorTemporary;
 
-      if (nextExchangeCount === 2 && !responseText.toLowerCase().includes("consultorio") && !responseText.toLowerCase().includes("contacto")) {
-        responseText += "\n\n¿Querés que te deje el contacto directo del consultorio?";
+      if (
+        nextExchangeCount === 2 &&
+        !responseText.includes(m.floatingChat.contactOffer) &&
+        !responseText.toLowerCase().includes("contact")
+      ) {
+        responseText += `\n\n${m.floatingChat.contactOffer}`;
       }
 
       setFloatingMessages((prev) => [...prev, { role: "assistant" as const, content: responseText }]);
@@ -237,7 +212,7 @@ export default function App() {
         ...prev,
         {
           role: "assistant" as const,
-          content: "En este momento estoy experimentando una saturación temporal de consultas de guardia. Por favor, reintentá tu pregunta en un instante."
+          content: m.floatingChat.errorSaturation
         }
       ]);
     } finally {
@@ -253,44 +228,31 @@ export default function App() {
     handleFloatingSendMessage(text);
   };
 
-  const handleFloatingChipClick = (topicName: string) => {
-    let query = "";
-    if (topicName === "Turnos") {
-      query = "¿Cómo puedo solicitar un turno de ecografía dinámica con el Dr. Tomás Pascual?";
-    } else if (topicName === "Especialidades") {
-      query = "¿En qué consiste la especialización médica del Dr. Pascual (RMN, Intervencionismo)?";
-    } else if (topicName === "Contacto") {
-      query = "¿Tienen algún número de teléfono directo o dirección de consultorios?";
-    } else if (topicName === "Currículum") {
-      query = "Me gustaría conocer la trayectoria académica y científica del Dr. Pascual.";
-    } else if (topicName === "Sí, por favor" || topicName === "Sí, claro") {
-      query = "Sí, por favor, brindame el contacto directo de los consultorios del Dr. Pascual.";
-    } else if (topicName === "No, gracias") {
-      query = "No, gracias, de acuerdo.";
-    } else {
-      query = topicName;
-    }
-    handleFloatingSendMessage(query);
+  const handleFloatingChipClick = (chipKey: string) => {
+    const allChips = [...m.floatingChat.chips, ...m.floatingChat.yesNoChips];
+    const chip = allChips.find((c) => c.key === chipKey);
+    handleFloatingSendMessage(chip?.query ?? chipKey);
   };
 
   // Secretary AI Bot state
-  const [chatMessages, setChatMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
-    {
-      role: "assistant",
-      content: "Hola. Bienvenido al consultorio digital y la consola de gestión del Dr. Tomás Agustín Pascual.\n\nMi misión es coordinar turnos médicos de alta competencia, resolver de manera exacta dudas administrativas sobre órdenes o autorizaciones de estudios complejos, y ofrecerte pautas formativas sobre lesiones deportivas basadas en la literatura científica del Dr. Pascual.\n\n¿En qué te puedo asesorar hoy? Podés consultarme sobre plazos de informes, requisitos de preparación para ecografías dinámicas, sedes (Barrio Norte, San Isidro, IMAXE) u ordenes de reimpresión. También podés escribir 'Qué tengo hoy' para auditar la agenda operativa."
-    }
-  ]);
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ role: "user" | "assistant"; content: string }>
+  >(() => [{ role: "assistant", content: m.assistantChat.welcome }]);
   const [userQuery, setUserQuery] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Simulated CRM / Workspace stats inside Section 7
-  const [crmLogs, setCrmLogs] = useState<Array<string>>([
-    "Sincronización establecida con base de datos UAR / Los Pumas.",
-    "Alerta: Se detectó 1 sobreturno urgente para esta tarde.",
-    "Información: Protocolo de Ecografía Dinámica cargado para deportista federado.",
-    "Actualización: Estado general de la consola de gestión - Operativo."
-  ]);
+  const [crmLogs, setCrmLogs] = useState<Array<string>>(() => [...m.assistantChat.crmLogs]);
+
+  useEffect(() => {
+    setFloatingMessages([
+      { role: "assistant", content: m.floatingChat.welcome, showChips: true },
+    ]);
+    setChatMessages([{ role: "assistant", content: m.assistantChat.welcome }]);
+    setCrmLogs([...m.assistantChat.crmLogs]);
+    setExchangeCount(0);
+  }, [locale]);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -311,7 +273,8 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: textToSend,
-          history: updatedMessages.slice(0, -1)
+          history: updatedMessages.slice(0, -1),
+          locale,
         })
       });
 
@@ -323,9 +286,11 @@ export default function App() {
       setChatMessages((prev) => [...prev, { role: "assistant" as const, content: data.text }]);
       
       setCrmLogs((prev) => [
-        `Comando procesado: "${textToSend.slice(0, 25)}..."`,
-        `Respuesta emitida por modelo experto @${new Date().toLocaleTimeString()}`,
-        ...prev.slice(0, 4)
+        formatMessage(m.assistantChat.crmCommand, { text: textToSend.slice(0, 25) }),
+        formatMessage(m.assistantChat.crmResponse, {
+          time: new Date().toLocaleTimeString(),
+        }),
+        ...prev.slice(0, 4),
       ]);
 
     } catch (error) {
@@ -334,7 +299,7 @@ export default function App() {
         ...prev,
         {
           role: "assistant" as const,
-          content: "Estimado/a, en este momento el canal de comunicación directa con el consultorio del Dr. Pascual está procesando solicitudes médicas urgentes. Por favor, reintentá tu consulta en un instante o acudí a las líneas oficiales."
+          content: m.assistantChat.error
         }
       ]);
     } finally {
@@ -392,11 +357,12 @@ export default function App() {
                 DR. TOMÁS PASCUAL
               </button>
               <span className="font-mono text-[7px] sm:text-[9px] md:text-[9.5px] text-[#6b6760] tracking-[0.14em] sm:tracking-[0.18em] uppercase font-light leading-snug line-clamp-2 sm:line-clamp-none">
-                DIAGNÓSTICO POR IMÁGENES · ALTA COMPETENCIA
+                {m.header.tagline}
               </span>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <LanguageSelector />
               <button
                 type="button"
                 onClick={() => {
@@ -405,13 +371,13 @@ export default function App() {
                 }}
                 className="hidden sm:inline-flex px-4 py-2 sm:px-5 sm:py-2.5 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] tracking-[0.16em] font-medium text-[10px] sm:text-[11px] md:text-[12px] uppercase hover:bg-[#4a8499]/18 hover:border-[#4a8499]/50 transition-all duration-300 rounded-sm cursor-pointer"
               >
-                Consultar
+                {m.header.consult}
               </button>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((open) => !open)}
                 className="lg:hidden p-2.5 border border-black/[0.08] text-[#1a1a18] hover:border-[#4a8499]/40 hover:text-[#4a8499] transition-all duration-200 cursor-pointer"
-                aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                aria-label={mobileMenuOpen ? m.header.closeMenu : m.header.openMenu}
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -421,7 +387,7 @@ export default function App() {
 
           {/* Nav desktop */}
           <nav className="hidden lg:flex mt-3 pt-3 border-t border-black/[0.05] flex-wrap items-center gap-x-0.5 xl:gap-x-1 gap-y-2 text-[11px] md:text-[12px] uppercase tracking-[0.12em] font-medium">
-            {NAV_ITEMS.map(({ id, label }) => {
+            {m.nav.map(({ id, label }) => {
               const isActive = spaceIndex === id;
               return (
                 <button
@@ -458,7 +424,7 @@ export default function App() {
                 transition={UNIFIED_PAGE_TRANSITION}
                 className="lg:hidden mt-3 pt-3 border-t border-black/[0.05] grid grid-cols-2 gap-2 pb-1"
               >
-                {NAV_ITEMS.map(({ id, label }) => {
+                {m.nav.map(({ id, label }) => {
                   const isActive = spaceIndex === id;
                   return (
                     <button
@@ -490,7 +456,7 @@ export default function App() {
                   }}
                   className="col-span-2 mt-1 w-full py-3 bg-[#4a8499]/10 border border-[#4a8499]/30 text-[#4a8499] tracking-[0.14em] font-medium text-[12px] uppercase hover:bg-[#4a8499]/18 transition-all duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)] rounded-sm cursor-pointer sm:hidden active:scale-[0.99]"
                 >
-                  Consultar
+                  {m.header.consult}
                 </button>
               </motion.nav>
             )}
@@ -543,14 +509,14 @@ export default function App() {
                   onClick={() => paginate(spaceIndex - 1)}
                   className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#5c5954] hover:text-[#1a1a18] transition duration-200 cursor-pointer order-2 sm:order-1"
                 >
-                  <ChevronLeft className="w-4 h-4 text-[#4a8499]" /> Anterior
+                  <ChevronLeft className="w-4 h-4 text-[#4a8499]" /> {m.pager.previous}
                 </button>
               ) : (
                 <div className="hidden sm:block w-20 order-1" />
               )}
               
               <div className="flex flex-wrap gap-1.5 sm:gap-2.5 justify-center items-center order-1 sm:order-2 w-full sm:w-auto max-w-full">
-                {PAGER_ITEMS.map(({ id, label, short }) => (
+                {m.nav.map(({ id, label, short }) => (
                   <button
                     key={id}
                     onClick={() => paginate(id)}
@@ -573,7 +539,7 @@ export default function App() {
                   onClick={() => paginate(spaceIndex + 1)}
                   className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#4a8499] hover:text-[#1a1a18] transition duration-200 font-medium cursor-pointer order-3"
                 >
-                  Siguiente <ChevronRight className="w-4 h-4 text-[#4a8499]" />
+                  {m.pager.next} <ChevronRight className="w-4 h-4 text-[#4a8499]" />
                 </button>
               ) : (
                 <div className="hidden sm:block w-20 order-3" />
@@ -590,20 +556,20 @@ export default function App() {
                       DR. TOMÁS PASCUAL
                     </span>
                     <span className="font-sans text-[8.5px] text-[#5c5954] tracking-widest uppercase font-light">
-                      Imágenes Médicas · Trauma & Deporte
+                      {m.footer.subtitle}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap gap-x-8 gap-y-2 text-[10px] font-sans tracking-wider uppercase font-light text-[#5c5954]">
-                    <button onClick={() => paginate(2)} className="hover:text-[#1a1a18] transition cursor-pointer">Trayectoria</button>
+                    <button onClick={() => paginate(2)} className="hover:text-[#1a1a18] transition cursor-pointer">{m.footer.trajectory}</button>
                     <span className="text-[#5c5954]/40">/</span>
-                    <button onClick={() => paginate(5)} className="hover:text-[#1a1a18] transition cursor-pointer">Consola Bot</button>
+                    <button onClick={() => paginate(5)} className="hover:text-[#1a1a18] transition cursor-pointer">{m.footer.botConsole}</button>
                     <span className="text-[#5c5954]/40">/</span>
-                    <button onClick={() => paginate(4)} className="hover:text-[#1a1a18] transition cursor-pointer">Publicaciones</button>
+                    <button onClick={() => paginate(4)} className="hover:text-[#1a1a18] transition cursor-pointer">{m.footer.publications}</button>
                     <span className="text-[#5c5954]/40">/</span>
-                    <button onClick={() => paginate(6)} className="hover:text-[#1a1a18] transition cursor-pointer">Sedes</button>
+                    <button onClick={() => paginate(6)} className="hover:text-[#1a1a18] transition cursor-pointer">{m.footer.locations}</button>
                     <span className="text-[#5c5954]/40">/</span>
-                    <button onClick={() => paginate(7)} className="hover:text-[#1a1a18] transition cursor-pointer">Portal</button>
+                    <button onClick={() => paginate(7)} className="hover:text-[#1a1a18] transition cursor-pointer">{m.footer.portal}</button>
                   </div>
 
                   <div className="flex gap-3 font-light">
@@ -611,7 +577,7 @@ export default function App() {
                       href="https://www.youtube.com/@DrTomasPascual/videos"
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="Canal de YouTube del Dr. Tomás Pascual"
+                      aria-label={m.footer.youtube}
                       className="social-icon social-icon--youtube"
                     >
                       <Youtube className="w-4 h-4" strokeWidth={2} />
@@ -620,7 +586,7 @@ export default function App() {
                       href="https://www.instagram.com/drtomaspascual"
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="Instagram del Dr. Tomás Pascual"
+                      aria-label={m.footer.instagram}
                       className="social-icon social-icon--instagram"
                     >
                       <Instagram className="w-4 h-4" strokeWidth={2} />
@@ -629,7 +595,7 @@ export default function App() {
                       href="https://ar.linkedin.com/in/drtomaspascual"
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="LinkedIn del Dr. Tomás Pascual"
+                      aria-label={m.footer.linkedin}
                       className="social-icon social-icon--linkedin"
                     >
                       <Linkedin className="w-4 h-4" strokeWidth={2} />
@@ -638,7 +604,7 @@ export default function App() {
                       href="https://www.facebook.com/drtomaspascual"
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label="Facebook del Dr. Tomás Pascual"
+                      aria-label={m.footer.facebook}
                       className="social-icon social-icon--facebook"
                     >
                       <Facebook className="w-4 h-4" strokeWidth={2} />
@@ -647,9 +613,7 @@ export default function App() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase font-sans text-[#5c5954] gap-3 font-light tracking-wider">
-                  <span>
-                    &copy; 2026 Dr. Tomás Agustín Pascual · Matrícula Nacional 136081
-                  </span>
+                  <span>{m.footer.copyright}</span>
                   <div className="flex gap-4 font-mono">
                     <span>M.N. 136081</span>
                     <span>•</span>
@@ -687,14 +651,14 @@ export default function App() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-[12px] font-normal text-[#1a1a18] tracking-wider uppercase">Dr. Pascual</span>
-              <span className="text-[10px] text-[#5c5954] tracking-wide font-light">Asistente digital</span>
+              <span className="text-[12px] font-normal text-[#1a1a18] tracking-wider uppercase">{m.floatingChat.assistantName}</span>
+              <span className="text-[10px] text-[#5c5954] tracking-wide font-light">{m.floatingChat.assistantRole}</span>
             </div>
           </div>
           <button
             onClick={() => setIsFloatingBotOpen(false)}
             className="text-[#5c5954] hover:text-[#1a1a18] transition duration-150 p-1 cursor-pointer"
-            aria-label="Cerrar chat"
+            aria-label={m.floatingChat.closeChat}
           >
             <X className="w-4 h-4" />
           </button>
@@ -732,27 +696,27 @@ export default function App() {
                   <div className="flex flex-col gap-1.5 pt-1">
                     {idx === 0 && (
                       <div className="flex flex-wrap gap-1.5 justify-start">
-                        {["Turnos", "Especialidades", "Contacto", "Currículum"].map((chip) => (
+                        {m.floatingChat.chips.map((chip) => (
                           <button
-                            key={chip}
-                            onClick={() => handleFloatingChipClick(chip)}
+                            key={chip.key}
+                            onClick={() => handleFloatingChipClick(chip.key)}
                             className="px-3 py-1.5 bg-white hover:bg-[#f7f6f3] hover:border-[#4a8499]/30 border border-black/[0.08] text-[10px] text-[#2c2a26] rounded-full transition-all duration-200 cursor-pointer font-light tracking-wider"
                           >
-                            {chip}
+                            {chip.label}
                           </button>
                         ))}
                       </div>
                     )}
-                    {(msg.content.includes("¿Querés que te deje el contacto directo del consultorio?") || 
-                      msg.content.includes("contacto directo del consultorio?")) && (
+                    {(msg.content.includes(m.floatingChat.contactOffer) ||
+                      msg.content.includes(m.floatingChat.contactOfferAlt)) && (
                       <div className="flex flex-wrap gap-1.5 justify-start">
-                        {["Sí, por favor", "No, gracias"].map((chip) => (
+                        {m.floatingChat.yesNoChips.map((chip) => (
                           <button
-                            key={chip}
-                            onClick={() => handleFloatingChipClick(chip)}
+                            key={chip.key}
+                            onClick={() => handleFloatingChipClick(chip.key)}
                             className="px-3 py-1.5 bg-white hover:bg-[#f7f6f3] hover:border-[#4a8499]/30 border border-black/[0.08] text-[10px] text-[#2c2a26] rounded-full transition-all duration-200 cursor-pointer font-light tracking-wider"
                           >
-                            {chip}
+                            {chip.label}
                           </button>
                         ))}
                       </div>
@@ -772,7 +736,7 @@ export default function App() {
               />
               <div className="bg-white border border-black/[0.06] px-3 py-2 text-[#5c5954] text-[10px] flex items-center gap-2 bot-bubble font-light rounded-2xl shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4a8499]/60 animate-ping"></span>
-                <span>Orientando...</span>
+                <span>{m.floatingChat.orienting}</span>
               </div>
             </div>
           )}
@@ -786,14 +750,14 @@ export default function App() {
               type="text"
               value={floatingInput}
               onChange={(e) => setFloatingInput(e.target.value)}
-              placeholder="Escribí tu consulta..."
+              placeholder={m.floatingChat.placeholder}
               className="flex-grow bg-white border border-black/[0.08] text-xs px-3.5 py-2.5 text-[#1a1a18] placeholder-[#8a8680] focus:outline-none focus:border-[#4a8499]/50 transition-all duration-200"
             />
             <button
               type="submit"
               disabled={floatingLoading || !floatingInput.trim()}
               className="p-2 text-[#5c5954] hover:text-[#4a8499] disabled:opacity-30 transition-all duration-200 active:scale-95 shrink-0 cursor-pointer"
-              aria-label="Enviar mensaje"
+              aria-label={m.floatingChat.sendMessage}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -805,7 +769,7 @@ export default function App() {
       <button
         onClick={() => setIsFloatingBotOpen(!isFloatingBotOpen)}
         className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 rounded-full z-[9999] shadow-[0_8px_24px_rgba(0,0,0,0.15)] cursor-pointer hover:shadow-[0_0_0_3px_rgba(74,132,153,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 group flex items-center justify-center bg-white border border-black/[0.08] overflow-hidden bot-glow-pulse"
-        aria-label="Abrir asistente digital"
+        aria-label={m.floatingChat.openAssistant}
       >
         <span className="absolute top-[2px] right-[2px] w-3 h-3 bg-emerald-500 rounded-full border-[1.5px] border-white z-20 animate-pulse"></span>
         

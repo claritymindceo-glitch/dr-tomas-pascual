@@ -11,7 +11,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { message, history } = req.body ?? {};
+    const { message, history, locale } = req.body ?? {};
+
+    const localeInstruction: Record<string, string> = {
+      "es-AR": "Responde siempre en español argentino.",
+      en: "Always respond in English.",
+      pt: "Responda sempre em português brasileiro.",
+    };
+    const langRule =
+      localeInstruction[String(locale)] ?? localeInstruction["es-AR"];
 
     if (!message) {
       return res.status(400).json({ error: "El mensaje es obligatorio." });
@@ -25,7 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     messages.push({ role: "user", content: message });
 
-    const text = await completeChat(PASCUAL_KNOWLEDGE_CONTEXT, messages, 1024);
+    const text = await completeChat(
+      `${PASCUAL_KNOWLEDGE_CONTEXT}\n\nIDIOMA: ${langRule}`,
+      messages,
+      1024
+    );
     return res.status(200).json({ text });
   } catch (error: unknown) {
     const details = error instanceof Error ? error.message : "Unknown error";

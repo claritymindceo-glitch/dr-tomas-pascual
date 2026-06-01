@@ -1,14 +1,24 @@
 import React, { useState } from "react";
 import SectionHeaderBanner from "../SectionHeaderBanner";
-import { CheckCircle2, Search, HelpCircle, FileText, Download, Check, UploadCloud } from "lucide-react";
-import { PATIENT_GUIDES } from "../../data";
+import {
+  CheckCircle2,
+  Search,
+  HelpCircle,
+  FileText,
+  Download,
+  Check,
+  UploadCloud,
+} from "lucide-react";
+import { formatMessage, useI18n } from "../../i18n/context";
 
 export default function SpacePortal() {
-  // Coberturas Search State
+  const { m } = useI18n();
+  const s = m.sections.portal;
+  const { patientGuides, insurances } = m.data;
+
   const [insuranceSearch, setInsuranceSearch] = useState("");
   const [selectedInsurance, setSelectedInsurance] = useState<string | null>(null);
 
-  // Preparation checklist
   const [patientChecklist, setPatientChecklist] = useState({
     order: true,
     credential: true,
@@ -16,10 +26,8 @@ export default function SpacePortal() {
     prevStudies: false,
   });
 
-  // Resources guide filter
   const [downloadStatus, setDownloadStatus] = useState<Record<number, string>>({});
 
-  // Uploader State
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -27,17 +35,6 @@ export default function SpacePortal() {
   const [uploaderName, setUploaderName] = useState("");
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [uploaderDocType, setUploaderDocType] = useState("credential");
-
-  const ACCEPTED_INSURANCES = [
-    { name: "OSDE", cover: "Cobertura Completa (Planes 210, 310, 410, 450 y 510)" },
-    { name: "Swiss Medical", cover: "Cobertura Completa (Planes de afinidad y corporativos)" },
-    { name: "Galeno", cover: "Cobertura con copago o sin cargo según plan (Plata, Oro, Azul)" },
-    { name: "Medicus", cover: "Cobertura Completa (Planes Azul, Celeste, Integra)" },
-    { name: "Omint", cover: "Cobertura según cartilla (Planes Global, Classic, Premium)" },
-    { name: "Sancor Salud", cover: "Cobertura Directa o por vía de reintegro pactado" },
-    { name: "Luis Pasteur", cover: "Cobertura Completa (Planes N, S, P)" },
-    { name: "Prevención Salud", cover: "Cobertura según plan vigente" }
-  ];
 
   const handleDownloadResource = (id: number) => {
     setDownloadStatus((prev) => ({ ...prev, [id]: "downloading" }));
@@ -67,7 +64,7 @@ export default function SpacePortal() {
 
     setUploading(true);
     setUploadProgress(10);
-    
+
     const interval = setInterval(() => {
       setUploadProgress((prev) => {
         if (prev >= 100) {
@@ -90,104 +87,85 @@ export default function SpacePortal() {
     setUploaderEmail("");
   };
 
-  const filteredInsurances = insuranceSearch.trim() === ""
-    ? []
-    : ACCEPTED_INSURANCES.filter(ins => ins.name.toLowerCase().includes(insuranceSearch.toLowerCase()));
+  const filteredInsurances =
+    insuranceSearch.trim() === ""
+      ? []
+      : insurances.filter((ins) =>
+          ins.name.toLowerCase().includes(insuranceSearch.toLowerCase())
+        );
+
+  const checklistKeys = ["order", "credential", "autorizacion", "prevStudies"] as const;
 
   return (
     <div className="w-full flex flex-col space-y-0 font-sans">
       <SectionHeaderBanner
         image="/images/sedes_recepcion_banner_1779991938852.png"
-        tag="PORTAL DIGITAL"
-        title="PORTAL DE AUTOGESTIÓN"
-        subtitle="Verificá coberturas activas, preparaciones pre-estudio requeridas y gestioná la carga de credenciales con el consultorio"
+        tag={s.banner.tag}
+        title={s.banner.title}
+        subtitle={s.banner.subtitle}
       />
 
-      {/* Checklist, Coberturas, & Uploader portal section */}
       <section className="py-16 bg-[#f0eeea] px-6">
         <div className="max-w-[1140px] mx-auto">
-          
           <div className="inline-flex items-center gap-2 bg-white border-t border-x border-black/[0.08] px-5 py-2 text-[8.5px] uppercase tracking-[0.2em] text-[#4a8499] z-10 relative">
             <span className="w-1.5 h-1.5 bg-[#4a8499]/50 rounded-full animate-pulse"></span>
-            PORTAL DEL PACIENTE
+            {s.badge}
           </div>
 
           <div className="neon-relief-card p-6 sm:p-10 md:p-12 mt-[-1px] bg-white border border-black/[0.06]">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              
-              {/* Left Column: Checklist & Insurances */}
               <div className="lg:col-span-4 flex flex-col gap-6">
-                
-                {/* Preparation Checkbox table */}
                 <div className="bg-white border border-black/[0.06] p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 pb-3 border-b border-[#4a8499]/20 mb-4 font-sans">
                       <CheckCircle2 className="w-4 h-4 text-[#4a8499]" />
                       <h3 className="text-[11px] uppercase tracking-[0.16em] text-[#2c2a26] font-normal">
-                        PREPARACIÓN DE ESTUDIO
+                        {s.preparationTitle}
                       </h3>
                     </div>
                     <p className="font-sans text-[11px] text-[#5c5954] leading-relaxed mb-4 font-light">
-                      Marcá qué requisitos tenés listos para activar la orden de prioridad clínica en admisión:
+                      {s.preparationIntro}
                     </p>
 
                     <div className="space-y-3 font-sans">
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#2c2a26] select-none">
-                        <input
-                          type="checkbox"
-                          checked={patientChecklist.order}
-                          onChange={() => setPatientChecklist(prev => ({ ...prev, order: !prev.order }))}
-                          className="mt-0.5 accent-[#4a8499]"
-                        />
-                        <span className="font-light">Orden médica original firmada (física o digital certificada)</span>
-                      </label>
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#2c2a26] select-none">
-                        <input
-                          type="checkbox"
-                          checked={patientChecklist.credential}
-                          onChange={() => setPatientChecklist(prev => ({ ...prev, credential: !prev.credential }))}
-                          className="mt-0.5 accent-[#4a8499]"
-                        />
-                        <span className="font-light">Credencial magnética de Obra Social o Medicina Privada</span>
-                      </label>
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#2c2a26] select-none">
-                        <input
-                          type="checkbox"
-                          checked={patientChecklist.autorizacion}
-                          onChange={() => setPatientChecklist(prev => ({ ...prev, autorizacion: !prev.autorizacion }))}
-                          className="mt-0.5 accent-[#4a8499]"
-                        />
-                        <span className="font-light">Autorización previa emitida (Obligatorio en intervencionismo)</span>
-                      </label>
-                      <label className="flex items-start gap-2.5 cursor-pointer text-xs text-[#2c2a26] select-none">
-                        <input
-                          type="checkbox"
-                          checked={patientChecklist.prevStudies}
-                          onChange={() => setPatientChecklist(prev => ({ ...prev, prevStudies: !prev.prevStudies }))}
-                          className="mt-0.5 accent-[#4a8499]"
-                        />
-                        <span className="font-light">Estudios previos cargados (Fichas de Los Pumas, placas de RMN)</span>
-                      </label>
+                      {checklistKeys.map((key, idx) => (
+                        <label
+                          key={key}
+                          className="flex items-start gap-2.5 cursor-pointer text-xs text-[#2c2a26] select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={patientChecklist[key]}
+                            onChange={() =>
+                              setPatientChecklist((prev) => ({
+                                ...prev,
+                                [key]: !prev[key],
+                              }))
+                            }
+                            className="mt-0.5 accent-[#4a8499]"
+                          />
+                          <span className="font-light">{s.checklist[idx]}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
 
                   <div className="pt-4 mt-6 border-t border-black/[0.06] flex items-center gap-2 text-[10px] uppercase font-mono tracking-wider font-light">
-                    <span>Estado Admisión:</span>
+                    <span>{s.admissionStatus}</span>
                     {Object.values(patientChecklist).filter(Boolean).length === 4 ? (
-                      <span className="text-emerald-500 font-semibold">• LISTO PARA ADMITIR</span>
+                      <span className="text-emerald-500 font-semibold">{s.ready}</span>
                     ) : (
-                      <span className="text-amber-500">• REQUISITOS EN GESTIÓN</span>
+                      <span className="text-amber-500">{s.pending}</span>
                     )}
                   </div>
                 </div>
 
-                {/* Insurance search filter widget */}
                 <div className="bg-white border border-black/[0.06] p-5 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-3 border-b border-[#4a8499]/20 font-sans">
                       <Search className="w-4 h-4 text-[#4a8499]" />
                       <h3 className="text-[11px] uppercase tracking-[0.16em] text-[#2c2a26] font-normal">
-                        CONSULTAR COBERTURAS
+                        {s.coverageTitle}
                       </h3>
                     </div>
                     <div className="relative font-sans">
@@ -198,7 +176,7 @@ export default function SpacePortal() {
                           setInsuranceSearch(e.target.value);
                           setSelectedInsurance(null);
                         }}
-                        placeholder="Buscá tu prepaga (ej: OSDE, Swiss...)"
+                        placeholder={s.coveragePlaceholder}
                         className="w-full bg-[#f0eeea] border border-black/[0.06] px-3 py-2 text-xs text-[#2c2a26] focus:outline-none focus:border-[#4a8499]/40 placeholder-[#8a8680]"
                       />
                     </div>
@@ -223,46 +201,48 @@ export default function SpacePortal() {
 
                     {selectedInsurance ? (
                       <div className="bg-[#f0eeea] p-4.5 border-l border-[#4a8499] border-y-[0.5px] border-r-[0.5px] border-black/[0.06] space-y-1.5">
-                        <span className="text-[9px] uppercase tracking-wider text-[#4a8499] font-mono block">MEDICINA PREPAGA CON ALTA DIRECTA</span>
-                        <h4 className="text-xs uppercase font-semibold text-[#2c2a26]">{selectedInsurance}</h4>
+                        <span className="text-[9px] uppercase tracking-wider text-[#4a8499] font-mono block">
+                          {s.coverageDirect}
+                        </span>
+                        <h4 className="text-xs uppercase font-semibold text-[#2c2a26]">
+                          {selectedInsurance}
+                        </h4>
                         <p className="text-[11px] text-[#5c5954] leading-relaxed font-light">
-                          {ACCEPTED_INSURANCES.find(i => i.name === selectedInsurance)?.cover}
+                          {insurances.find((i) => i.name === selectedInsurance)?.cover}
                         </p>
                       </div>
                     ) : insuranceSearch.trim() !== "" && filteredInsurances.length === 0 ? (
                       <div className="bg-[#f0eeea] p-4 border border-red-500/10 text-red-400 font-sans text-[10.5px] leading-relaxed">
-                        No se encontró convenio directo para "{insuranceSearch}". Los pacientes no adheridos pueden requerir un reintegro pos-consulta emitido por mesa de ayuda.
+                        {formatMessage(s.coverageNotFoundLong, { name: insuranceSearch })}
                       </div>
                     ) : (
                       <div className="flex gap-2 items-start justify-start p-3 bg-[#f0eeea] text-[10.5px] text-[#5c5954] leading-relaxed font-sans">
                         <HelpCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <span>Escribí el nombre de tu prepaga para verificar el nivel de cobertura directa del Dr. Tomás Pascual.</span>
+                        <span>{s.coverageHelp}</span>
                       </div>
                     )}
                   </div>
                 </div>
-
               </div>
 
-              {/* Center Column: Guides downloads list */}
               <div className="lg:col-span-4 flex flex-col justify-between border border-black/[0.06] bg-white p-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-3 border-b border-[#4a8499]/20 font-sans">
                     <FileText className="w-4 h-4 text-[#4a8499]" />
                     <h3 className="text-[11px] uppercase tracking-[0.16em] text-[#2c2a26] font-normal">
-                      GUÍAS MÉDICAS PDF
+                      {s.guidesTitle}
                     </h3>
                   </div>
 
                   <div className="space-y-3 font-sans">
-                    {PATIENT_GUIDES.map((guide) => (
-                      <div 
-                        key={guide.id}
+                    {patientGuides.map((guide, guideIdx) => (
+                      <div
+                        key={guideIdx}
                         className="bg-[#f0eeea] p-4.5 border border-black/[0.06] flex flex-col justify-between hover:border-black/[0.08] transition duration-300 gap-3"
                       >
                         <div className="space-y-1">
                           <span className="text-[8px] font-mono tracking-widest text-[#4a8499] uppercase">
-                            CATEGORÍA: {guide.category || "PROCEDIMIENTO"}
+                            {s.category} {guide.category || s.procedureFallback}
                           </span>
                           <h4 className="text-xs font-light tracking-wide text-[#1a1a18] uppercase">
                             {guide.title}
@@ -270,23 +250,25 @@ export default function SpacePortal() {
                         </div>
 
                         <div className="flex justify-between items-center pt-2.5 border-t border-black/[0.06]">
-                          <span className="text-[9px] text-[#5c5954] font-light">TAMAÑO: {guide.size || "1.2 MB"}</span>
+                          <span className="text-[9px] text-[#5c5954] font-light">
+                            {s.size} {guide.size || s.sizeFallback}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => handleDownloadResource(guide.id)}
+                            onClick={() => handleDownloadResource(guideIdx)}
                             className="bg-transparent border border-black/[0.08] hover:border-[#4a8499]/40 py-1 px-2.5 text-[8.5px] uppercase tracking-wider text-[#2c2a26] hover:text-[#4a8499] transition cursor-pointer flex items-center gap-1.5 rounded-sm font-light"
                           >
-                            {downloadStatus[guide.id] === "downloading" ? (
-                              <span>Descargando...</span>
-                            ) : downloadStatus[guide.id] === "completed" ? (
+                            {downloadStatus[guideIdx] === "downloading" ? (
+                              <span>{s.downloading}</span>
+                            ) : downloadStatus[guideIdx] === "completed" ? (
                               <>
                                 <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400 font-semibold">Listo PDF</span>
+                                <span className="text-emerald-400 font-semibold">{s.readyPdf}</span>
                               </>
                             ) : (
                               <>
                                 <Download className="w-3 h-3" />
-                                <span>Descargar</span>
+                                <span>{s.download}</span>
                               </>
                             )}
                           </button>
@@ -297,13 +279,12 @@ export default function SpacePortal() {
                 </div>
               </div>
 
-              {/* Right Column: PDF / Credential digital uploader */}
               <div className="lg:col-span-4 bg-white border border-black/[0.06] p-5 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 pb-3 border-b border-[#4a8499]/20 mb-4 font-sans">
                     <UploadCloud className="w-4 h-4 text-[#4a8499]" />
                     <h3 className="text-[11px] uppercase tracking-[0.16em] text-[#2c2a26] font-normal">
-                      CARGA DIGITAL DE CREDENCIALES
+                      {s.uploadTitle}
                     </h3>
                   </div>
 
@@ -313,9 +294,11 @@ export default function SpacePortal() {
                         <Check className="w-5 h-5" />
                       </div>
                       <div className="space-y-1">
-                        <h4 className="text-xs uppercase font-light text-[#1a1a18] tracking-widest">CARGA EXITOSA</h4>
+                        <h4 className="text-xs uppercase font-light text-[#1a1a18] tracking-widest">
+                          {s.uploadSuccess}
+                        </h4>
                         <p className="text-[10.5px] text-[#5c5954] font-light leading-relaxed">
-                          La credencial/documento se cargó correctamente. Será validado en admisión previo a tu turno.
+                          {s.uploadSuccessMessage}
                         </p>
                       </div>
                       <button
@@ -323,51 +306,57 @@ export default function SpacePortal() {
                         onClick={resetUploadForm}
                         className="py-1.5 px-4 bg-transparent border border-black/[0.08] font-sans text-[8px] tracking-widest uppercase text-[#2c2a26] hover:bg-black/[0.03] cursor-pointer rounded-sm"
                       >
-                        Cargar otro archivo
+                        {s.uploadAnother}
                       </button>
                     </div>
                   ) : (
                     <form onSubmit={triggerUploadSubmit} className="space-y-4 font-sans">
-                      
                       <div className="space-y-1">
-                        <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">TIPO DE DOCUMENTO:</label>
-                        <select 
+                        <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">
+                          {s.docType}
+                        </label>
+                        <select
                           value={uploaderDocType}
                           onChange={(e) => setUploaderDocType(e.target.value)}
                           className="w-full bg-[#f0eeea] border border-black/[0.06] px-3 py-2 text-xs text-[#2c2a26] focus:outline-none focus:border-[#4a8499]/40 cursor-pointer"
                         >
-                          <option value="credential">Credencial de Obra Social</option>
-                          <option value="order">Orden Médica de Derivación</option>
-                          <option value="report">Informe de RMN Previo</option>
+                          {s.docTypes.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-left">
                         <div className="space-y-1">
-                          <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">Nombre completo:</label>
+                          <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">
+                            {s.fullName}:
+                          </label>
                           <input
                             type="text"
                             required
                             value={uploaderName}
                             onChange={(e) => setUploaderName(e.target.value)}
-                            placeholder="Ej: Nicolás P."
+                            placeholder={s.namePlaceholder}
                             className="w-full bg-[#f0eeea] border border-black/[0.06] px-3 py-2 text-xs text-[#2c2a26] focus:outline-none focus:border-black/[0.08] placeholder-[#8a8680]"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">Email de contacto:</label>
+                          <label className="text-[8.5px] text-[#5c5954] uppercase tracking-wider block font-light">
+                            {s.contactEmail}:
+                          </label>
                           <input
                             type="email"
                             required
                             value={uploaderEmail}
                             onChange={(e) => setUploaderEmail(e.target.value)}
-                            placeholder="Ej: nico@mail.com"
+                            placeholder={s.emailPlaceholder}
                             className="w-full bg-[#f0eeea] border border-black/[0.06] px-3 py-2 text-xs text-[#2c2a26] focus:outline-none focus:border-black/[0.08] placeholder-[#8a8680]"
                           />
                         </div>
                       </div>
 
-                      {/* Dropzone */}
                       <div
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={fileDropHandler}
@@ -382,21 +371,27 @@ export default function SpacePortal() {
                         <label htmlFor="file-pick" className="block w-full h-full cursor-pointer">
                           <UploadCloud className="w-7 h-7 text-[#5c5954] mx-auto mb-2" />
                           <div className="text-[10px] text-[#2c2a26] font-light">
-                            {uploadFile ? `CARGADO: ${uploadFile.name}` : "Arrastrá el archivo aquí o hacé clic"}
+                            {uploadFile
+                              ? `${s.uploaded} ${uploadFile.name}`
+                              : s.dropzone}
                           </div>
-                          <p className="text-[8.5px] text-[#5c5954] font-light block mt-1">Formato soportado: PDF, JPG, PNG (Hasta 10MB)</p>
+                          <p className="text-[8.5px] text-[#5c5954] font-light block mt-1">
+                            {s.formatHintLong}
+                          </p>
                         </label>
                       </div>
 
                       {uploading ? (
                         <div className="space-y-2 text-center p-2">
-                           <div className="w-full bg-[#f0eeea] h-1.5 rounded-full overflow-hidden">
-                            <div 
+                          <div className="w-full bg-[#f0eeea] h-1.5 rounded-full overflow-hidden">
+                            <div
                               className="bg-[#4a8499] h-full transition-all duration-300"
                               style={{ width: `${uploadProgress}%` }}
                             />
-                           </div>
-                           <span className="text-[9px] text-[#5c5954] block font-light">Subiendo archivo e indexando con CRM... ({uploadProgress}%)</span>
+                          </div>
+                          <span className="text-[9px] text-[#5c5954] block font-light">
+                            {formatMessage(s.uploading, { n: uploadProgress })}
+                          </span>
                         </div>
                       ) : (
                         <button
@@ -408,18 +403,15 @@ export default function SpacePortal() {
                               : "bg-[#f0eeea] border border-black/[0.06] text-[#5c5954] cursor-not-allowed"
                           }`}
                         >
-                          Cargar e Indexar en CRM
+                          {s.uploadButton}
                         </button>
                       )}
-
                     </form>
                   )}
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       </section>
     </div>
